@@ -20,7 +20,7 @@
       "isLinked": true,
       "rows": [
         [
-          { "skillId": "detonate-dead-scavenging" },
+          { "skillId": "detonate-dead" },
           { "skillId": "cast-when-stunned" },
           { "skillId": "concentrated-effect" }
         ],

@@ -75,7 +75,7 @@ function getSkillProps(skillId: string) {
       {Object.entries(skillSetups).map(([key, setup]) => {
         const isLinked = setup.isLinked;
         return (
-          <div class="skill-section">
+          <div class="skill-section" data-setup-id={key}>
             <h2>{setup.title}</h2>
             <p class="section-desc">{setup.description}</p>
 
@@ -165,64 +165,53 @@ function getSkillProps(skillId: string) {
     color: var(--color-accent);
   }
 
-  /* Limited Event loadout - Green animated gradient effect */
+  /* Limited Event loadout - Modern minimalist green effect */
   .loadout-tab--limited-event {
     position: relative;
-    overflow: hidden;
+    background: linear-gradient(135deg, rgba(34, 139, 34, 0.08), rgba(0, 128, 0, 0.12));
+    border-color: rgba(34, 139, 34, 0.4);
+    transition: all 0.3s ease;
   }
 
-  .loadout-tab--limited-event::before {
+  .loadout-tab--limited-event::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(
-      90deg,
-      #0a1a0a 0%,
-      #00ff41 12.5%,
-      #32cd32 25%,
-      #228b22 37.5%,
-      #00ff7f 50%,
-      #2e8b57 62.5%,
-      #00ff41 75%,
-      #228b22 87.5%,
-      #0a1a0a 100%
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(34, 139, 34, 0.15) 50%,
+      transparent 100%
     );
-    background-size: 200px 100%;
-    opacity: 0.25;
-    animation: bog-shaman-flow 4s linear infinite;
-    pointer-events: none;
+    opacity: 0;
+    animation: minimal-shimmer 3s ease-in-out infinite;
   }
 
-  .loadout-tab--limited-event:hover::before {
-    opacity: 0.4;
-  }
-
-  .loadout-tab--limited-event.loadout-tab--active::before {
-    opacity: 0.5;
-  }
-
-  @keyframes bog-shaman-flow {
-    0% {
-      background-position: 0 0;
+  @keyframes minimal-shimmer {
+    0%, 100% {
+      opacity: 0;
     }
-    100% {
-      background-position: 200px 0;
+    50% {
+      opacity: 1;
     }
-  }
-
-  /* Additional styling for limited event when active */
-  .loadout-tab--limited-event.loadout-tab--active {
-    border-color: #00ff41;
-    color: #00ff41;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
   }
 
   .loadout-tab--limited-event:hover {
-    border-color: #00ff41;
-    color: #00ff41;
+    border-color: rgba(34, 139, 34, 0.7);
+    background: linear-gradient(135deg, rgba(34, 139, 34, 0.12), rgba(0, 128, 0, 0.18));
+    box-shadow: 0 0 12px rgba(34, 139, 34, 0.2);
+  }
+
+  .loadout-tab--limited-event.loadout-tab--active {
+    border-color: #228b22;
+    background: linear-gradient(135deg, rgba(34, 139, 34, 0.15), rgba(0, 128, 0, 0.22));
+    color: #3cb371;
+    box-shadow: 0 0 16px rgba(34, 139, 34, 0.25), inset 0 0 20px rgba(34, 139, 34, 0.1);
+  }
+
+  .loadout-tab--limited-event.loadout-tab--active::after {
+    animation: minimal-shimmer 2.5s ease-in-out infinite;
   }
 
   .loadout-description {
@@ -325,6 +314,20 @@ function getSkillProps(skillId: string) {
   // Loadout System with localStorage persistence
   const STORAGE_KEY = 'emiracle-cws-loadout';
 
+  function updateSkillSections(loadoutKey) {
+    const activeSetups = loadouts[loadoutKey]?.activeSetups || [];
+    const sections = document.querySelectorAll('.skill-section');
+
+    sections.forEach(section => {
+      const setupId = section.getAttribute('data-setup-id');
+      if (activeSetups.includes(setupId)) {
+        section.style.display = 'block';
+      } else {
+        section.style.display = 'none';
+      }
+    });
+  }
+
   function initLoadoutSystem() {
     const tabs = document.querySelectorAll('.loadout-tab');
     const description = document.getElementById('loadout-description');
@@ -332,7 +335,7 @@ function getSkillProps(skillId: string) {
     // Load saved loadout from localStorage
     const savedLoadout = localStorage.getItem(STORAGE_KEY) || 'default';
 
-    // Set initial active state
+    // Set initial active state and show correct sections
     tabs.forEach(tab => {
       const loadoutKey = tab.getAttribute('data-loadout');
       if (loadoutKey === savedLoadout) {
@@ -344,6 +347,9 @@ function getSkillProps(skillId: string) {
         tab.classList.remove('loadout-tab--active');
       }
     });
+
+    // Show/hide sections for initial loadout
+    updateSkillSections(savedLoadout);
 
     // Add click handlers
     tabs.forEach(tab => {
@@ -358,6 +364,9 @@ function getSkillProps(skillId: string) {
         if (description && loadouts[loadoutKey]) {
           description.textContent = loadouts[loadoutKey].description;
         }
+
+        // Update visible skill sections
+        updateSkillSections(loadoutKey);
 
         // Save to localStorage
         localStorage.setItem(STORAGE_KEY, loadoutKey);
