@@ -5,7 +5,9 @@ interface Props {
 }
 
 const { title, description = "Emiracles Cast When Stunned (CWS) Build Guide for Path of Exile 1" } = Astro.props;
-const base = import.meta.env.BASE_URL;
+// Ensure base URL ends with a slash
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
 ---
 
 <!DOCTYPE html>

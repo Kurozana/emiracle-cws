@@ -5,7 +5,9 @@ import GemIcon from '../components/GemIcon.astro';
 import skillsData from '../data/skills.json';
 import { type SkillsData } from '../utils/skills';
 
-const base = import.meta.env.BASE_URL;
+// Ensure base URL ends with a slash
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
 const data = skillsData as SkillsData;
 const { skillSetups, skills } = data;
 

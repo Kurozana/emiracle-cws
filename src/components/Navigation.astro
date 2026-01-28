@@ -6,10 +6,12 @@ interface NavItem {
   href: string;
 }
 
-const base = import.meta.env.BASE_URL;
+// Ensure base URL ends with a slash
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
 
 const navItems: NavItem[] = [
-  { label: 'Home', href: `${base}` },
+  { label: 'Home', href: base },
   { label: 'Guide', href: `${base}guide/` },
   { label: 'Gear', href: `${base}gear/` },
   { label: 'Skills', href: `${base}skills/` },
