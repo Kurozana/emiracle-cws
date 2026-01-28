@@ -81,6 +81,7 @@
       "isSupport": false,
       "icon": "/gems/Detonate_Dead.png",
       "tags": [
+        "main",
         { "prefix": "OF", "name": "SCAVENGING" }
       ],
       "level": 20
@@ -98,15 +99,15 @@
       "color": "red",
       "isSupport": false,
       "icon": "/gems/Flesh_and_Stone_skill_icon.png",
-      "tags": [],
+      "tags": ["main"],
       "level": 20
     },
     "malevolence": {
       "baseName": "Malevolence",
-      "color": "green",
+      "color": "blue",
       "isSupport": false,
       "icon": "/gems/Malevolence_skill_icon.png",
-      "tags": [],
+      "tags": ["main"],
       "level": 20
     },
     "petrified-blood": {
@@ -114,7 +115,7 @@
       "color": "red",
       "isSupport": false,
       "icon": "/gems/Petrified_Blood_skill_icon.png",
-      "tags": [],
+      "tags": ["main"],
       "level": 20
     },
     "purity-of-fire": {
@@ -122,7 +123,7 @@
       "color": "red",
       "isSupport": false,
       "icon": "/gems/Purity_of_Fire_skill_icon.png",
-      "tags": [],
+      "tags": ["main"],
       "level": 20
     },
     "swift-affliction": {

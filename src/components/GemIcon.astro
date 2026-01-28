@@ -24,6 +24,7 @@ interface Props {
   isSupport?: boolean;
   level?: number;
   levelWarning?: boolean;
+  isMain?: boolean;
 }
 
 const {
@@ -34,7 +35,8 @@ const {
   size = 'md',
   isSupport = false,
   level,
-  levelWarning = false
+  levelWarning = false,
+  isMain = false
 } = Astro.props;
 
 const colorMap = {
@@ -51,7 +53,7 @@ const sizeMap = {
 };
 ---
 
-<div class:list={['gem-icon', `gem-icon--${size}`, { 'gem-icon--support': isSupport }]}>
+<div class:list={['gem-icon', `gem-icon--${size}`, { 'gem-icon--support': isSupport, 'gem-icon--main': isMain }]}>
   <div
     class="gem-icon__image"
     style={`--gem-color: ${colorMap[color]}; --gem-size: ${sizeMap[size].icon}`}
@@ -181,6 +183,21 @@ const sizeMap = {
 
   .gem-icon:hover .gem-icon__name {
     color: var(--color-text);
+  }
+
+  /* Main skill styling - prominent colored border */
+  .gem-icon--main .gem-icon__image {
+    border: 3px solid var(--gem-color);
+    box-shadow:
+      0 0 12px color-mix(in srgb, var(--gem-color) 50%, transparent),
+      inset 0 0 8px color-mix(in srgb, var(--gem-color) 20%, transparent);
+  }
+
+  .gem-icon--main:hover .gem-icon__image {
+    border-color: var(--gem-color);
+    box-shadow:
+      0 0 18px color-mix(in srgb, var(--gem-color) 70%, transparent),
+      inset 0 0 12px color-mix(in srgb, var(--gem-color) 30%, transparent);
   }
 
   /* Support gem styling - FULLY TRANSPARENT */
