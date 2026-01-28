@@ -6,13 +6,15 @@ interface NavItem {
   href: string;
 }
 
+const base = import.meta.env.BASE_URL;
+
 const navItems: NavItem[] = [
-  { label: 'Home', href: '/' },
-  { label: 'Guide', href: '/guide' },
-  { label: 'Gear', href: '/gear' },
-  { label: 'Skills', href: '/skills' },
-  { label: 'Leveling', href: '/leveling' },
-  { label: 'FAQ', href: '/faq' },
+  { label: 'Home', href: `${base}` },
+  { label: 'Guide', href: `${base}guide` },
+  { label: 'Gear', href: `${base}gear` },
+  { label: 'Skills', href: `${base}skills` },
+  { label: 'Leveling', href: `${base}leveling` },
+  { label: 'FAQ', href: `${base}faq` },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -20,7 +22,7 @@ const currentPath = Astro.url.pathname;
 
 <nav class="navigation">
   <div class="nav-brand">
-    <a href="/" class="brand-link">
+    <a href={base} class="brand-link">
       <span class="brand-text">Emiracle</span>
       <span class="brand-highlight">CWS</span>
     </a>

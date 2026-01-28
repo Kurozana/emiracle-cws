@@ -5,6 +5,7 @@ import GemIcon from '../components/GemIcon.astro';
 import skillsData from '../data/skills.json';
 import { type SkillsData } from '../utils/skills';
 
+const base = import.meta.env.BASE_URL;
 const data = skillsData as SkillsData;
 const { skillSetups, skills } = data;
 
@@ -12,12 +13,14 @@ const { skillSetups, skills } = data;
 function getSkillProps(skillId: string) {
   const skill = skills[skillId];
   if (!skill) return null;
+  // Prepend base URL to icon path
+  const iconPath = skill.icon ? `${base}${skill.icon.replace(/^\//, '')}` : undefined;
   return {
     baseName: skill.baseName,
     tags: skill.tags,
     color: skill.color,
     isSupport: skill.isSupport,
-    icon: skill.icon
+    icon: iconPath
   };
 }
 ---
