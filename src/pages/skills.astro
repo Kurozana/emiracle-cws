@@ -165,12 +165,38 @@ function getSkillProps(skillId: string) {
     color: var(--color-accent);
   }
 
-  /* Limited Event loadout - Modern minimalist green effect */
+  /* Limited Event loadout - Modern clean green animation */
   .loadout-tab--limited-event {
     position: relative;
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.08), rgba(0, 128, 0, 0.12));
-    border-color: rgba(34, 139, 34, 0.4);
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(34, 139, 34, 0.1), rgba(46, 125, 50, 0.15));
+    border-color: rgba(34, 139, 34, 0.5);
     transition: all 0.3s ease;
+  }
+
+  .loadout-tab--limited-event::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      115deg,
+      transparent 40%,
+      rgba(46, 125, 50, 0.2) 50%,
+      transparent 60%
+    );
+    animation: clean-slide 4s linear infinite;
+  }
+
+  @keyframes clean-slide {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
   }
 
   .loadout-tab--limited-event::after {
@@ -179,39 +205,43 @@ function getSkillProps(skillId: string) {
     inset: 0;
     border-radius: inherit;
     background: linear-gradient(
-      135deg,
+      90deg,
       transparent 0%,
       rgba(34, 139, 34, 0.15) 50%,
       transparent 100%
     );
-    opacity: 0;
-    animation: minimal-shimmer 3s ease-in-out infinite;
+    background-size: 200% 100%;
+    animation: smooth-shine 3s ease-in-out infinite;
   }
 
-  @keyframes minimal-shimmer {
+  @keyframes smooth-shine {
     0%, 100% {
-      opacity: 0;
+      background-position: -200% 0;
     }
     50% {
-      opacity: 1;
+      background-position: 200% 0;
     }
   }
 
   .loadout-tab--limited-event:hover {
-    border-color: rgba(34, 139, 34, 0.7);
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.12), rgba(0, 128, 0, 0.18));
-    box-shadow: 0 0 12px rgba(34, 139, 34, 0.2);
+    border-color: rgba(34, 139, 34, 0.75);
+    background: linear-gradient(135deg, rgba(34, 139, 34, 0.15), rgba(46, 125, 50, 0.2));
+    box-shadow: 0 0 14px rgba(34, 139, 34, 0.25);
   }
 
   .loadout-tab--limited-event.loadout-tab--active {
-    border-color: #228b22;
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.15), rgba(0, 128, 0, 0.22));
-    color: #3cb371;
-    box-shadow: 0 0 16px rgba(34, 139, 34, 0.25), inset 0 0 20px rgba(34, 139, 34, 0.1);
+    border-color: #2e7d32;
+    background: linear-gradient(135deg, rgba(34, 139, 34, 0.18), rgba(46, 125, 50, 0.25));
+    color: #66bb6a;
+    box-shadow: 0 0 18px rgba(34, 139, 34, 0.3), inset 0 0 25px rgba(46, 125, 50, 0.15);
+  }
+
+  .loadout-tab--limited-event.loadout-tab--active::before {
+    animation: clean-slide 3s linear infinite;
   }
 
   .loadout-tab--limited-event.loadout-tab--active::after {
-    animation: minimal-shimmer 2.5s ease-in-out infinite;
+    animation: smooth-shine 2.5s ease-in-out infinite;
   }
 
   .loadout-description {

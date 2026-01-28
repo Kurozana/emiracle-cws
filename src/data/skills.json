@@ -52,9 +52,7 @@
         [
           { "skillId": "righteous-fire" },
           { "skillId": "elemental-focus-support" },
-          { "skillId": "burning-damage" }
-        ],
-        [
+          { "skillId": "burning-damage" },
           { "skillId": "efficacy-support" },
           { "skillId": "aoe-support" }
         ]
@@ -67,9 +65,7 @@
       "rows": [
         [
           { "skillId": "fire-trap" },
-          { "skillId": "trap-mine-damage-support" }
-        ],
-        [
+          { "skillId": "trap-mine-damage-support" },
           { "skillId": "controlled-destruction-support" },
           { "skillId": "burning-damage" }
         ]
@@ -94,9 +90,7 @@
         [
           { "skillId": "frostblink" },
           { "skillId": "scorching-ray" },
-          { "skillId": "flammability" }
-        ],
-        [
+          { "skillId": "flammability" },
           { "skillId": "purity-of-elements" },
           { "skillId": "purity-of-fire" },
           { "skillId": "vitality" }
@@ -193,7 +187,7 @@
       "baseName": "Righteous Fire",
       "color": "blue",
       "isSupport": false,
-      "icon": "/gems/Righteous_Fire_skill_icon.png",
+      "icon": "/gems/Righteous_Fire_inventory_icon.png",
       "tags": ["main"],
       "level": 20
     },
