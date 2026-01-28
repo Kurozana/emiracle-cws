@@ -1,0 +1,160 @@
+---
+/**
+ * Theme Toggle Component
+ * Cute, minimalistic sun/moon toggle for light/dark mode
+ */
+---
+
+<button
+  id="theme-toggle"
+  class="theme-toggle"
+  aria-label="Toggle dark mode"
+  title="Toggle theme"
+>
+  <div class="toggle-track">
+    <div class="toggle-thumb">
+      <!-- Sun icon -->
+      <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"/>
+        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+      </svg>
+      <!-- Moon icon -->
+      <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </div>
+  </div>
+</button>
+
+<style>
+  .theme-toggle {
+    --toggle-width: 52px;
+    --toggle-height: 28px;
+    --thumb-size: 20px;
+
+    position: relative;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .toggle-track {
+    width: var(--toggle-width);
+    height: var(--toggle-height);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+  }
+
+  .theme-toggle:hover .toggle-track {
+    border-color: var(--color-accent);
+  }
+
+  .theme-toggle:focus-visible .toggle-track {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .toggle-thumb {
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background: var(--color-accent);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: relative;
+    flex-shrink: 0;
+    margin-left: 0;
+  }
+
+  /* Dark mode - move thumb to right */
+  :global([data-theme="dark"]) .toggle-thumb {
+    margin-left: auto;
+  }
+
+  /* Icons - centered in thumb */
+  .icon {
+    width: 12px;
+    height: 12px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -6px;
+    margin-left: -6px;
+    transition: all 0.3s ease;
+  }
+
+  .icon-sun {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  .icon-moon {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+
+  /* Dark mode - switch icons */
+  :global([data-theme="dark"]) .icon-sun {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+  }
+
+  :global([data-theme="dark"]) .icon-moon {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  /* Hover effect */
+  .theme-toggle:hover .toggle-thumb {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .theme-toggle:active .toggle-thumb {
+    transform: scale(0.9);
+  }
+</style>
+
+<script>
+  // Theme toggle functionality
+  const toggle = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+
+  // Check for saved theme or system preference
+  function getPreferredTheme(): 'light' | 'dark' {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  // Apply theme
+  function setTheme(theme: 'light' | 'dark') {
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+
+  // Initialize
+  setTheme(getPreferredTheme());
+
+  // Toggle on click
+  toggle?.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  });
+
+  // Listen for system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      setTheme(e.matches ? 'dark' : 'light');
+    }
+  });
+</script>

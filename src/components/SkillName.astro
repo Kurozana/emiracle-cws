@@ -1,0 +1,88 @@
+---
+/**
+ * SkillName Component
+ * Renders skill names with animated gradient TAGs
+ *
+ * CRITICAL: Effects are ONLY applied to explicitly defined TAGs in metadata.
+ * NO string parsing or "OF" detection is performed.
+ * If tags array is empty, the skill renders as plain text.
+ *
+ * TAG formats:
+ *   - { prefix: "OF THE", name: "CONC GROUND" }
+ *   - { prefix: "OF", name: "SCAVENGING" }
+ */
+
+interface SkillTag {
+  prefix: "OF" | "OF THE";
+  name: string;
+}
+
+interface Props {
+  baseName: string;
+  tags?: SkillTag[];
+  class?: string;
+}
+
+const { baseName, tags = [], class: className } = Astro.props;
+
+// Build tag display strings from structured metadata
+const tagStrings = tags.map(tag => `${tag.prefix} ${tag.name}`);
+const hasTags = tags.length > 0;
+---
+
+<span class:list={['skill-name', className]}>
+  <span class="skill-name__base">{baseName}</span>
+  {hasTags && tagStrings.map(tagStr => (
+    <span class="skill-name__tag">{tagStr}</span>
+  ))}
+</span>
+
+<style>
+  .skill-name {
+    display: inline;
+  }
+
+  .skill-name__base {
+    /* Plain, unstyled text - no effects */
+    color: inherit;
+  }
+
+  .skill-name__tag {
+    /* Fire/galaxy animated gradient - seamless rightward flow */
+    /* Gradient tiles perfectly: starts and ends with same color (#1a0a00) */
+    background: repeating-linear-gradient(
+      90deg,
+      #1a0a00 0%,
+      #ff4500 12.5%,
+      #ff6a00 25%,
+      #cc3300 37.5%,
+      #ff8c00 50%,
+      #e65c00 62.5%,
+      #ff4500 75%,
+      #cc3300 87.5%,
+      #1a0a00 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fire-flow-seamless 3s linear infinite;
+    font-weight: 600;
+    margin-left: 0.25em;
+  }
+
+  @keyframes fire-flow-seamless {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 200px 0;
+    }
+  }
+
+  /* Subtle glow intensify on hover */
+  .skill-name:hover .skill-name__tag {
+    filter: brightness(1.3);
+    text-shadow: 0 0 12px rgba(255, 69, 0, 0.5);
+  }
+</style>

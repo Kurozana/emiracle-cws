@@ -1,0 +1,121 @@
+/* ============================================
+   EMIRACLE CWS - Custom Animation Templates
+
+   This file is designed to easily accept and
+   inject any animation template you provide.
+
+   Just paste your animation CSS here!
+   ============================================ */
+
+/*
+   HOW TO USE:
+   1. Paste any CSS animation code below
+   2. Reference the class names in your components
+   3. The animations will automatically be available
+
+   Example:
+   .my-custom-animation {
+     animation: myAnimation 1s ease forwards;
+   }
+
+   @keyframes myAnimation {
+     from { ... }
+     to { ... }
+   }
+*/
+
+/* ----------------------------------------
+   YOUR CUSTOM ANIMATIONS GO HERE
+   ---------------------------------------- */
+
+
+
+
+/* ----------------------------------------
+   TEMPLATE: Complex Hover Card Effect
+   Example of a more complex animation
+   ---------------------------------------- */
+
+.card-3d {
+  perspective: 1000px;
+}
+
+.card-3d-inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover .card-3d-inner {
+  transform: rotateY(10deg) rotateX(5deg);
+}
+
+/* ----------------------------------------
+   TEMPLATE: Typing Effect (needs JS)
+   ---------------------------------------- */
+
+.typing-effect {
+  overflow: hidden;
+  border-right: 2px solid var(--color-accent);
+  white-space: nowrap;
+  animation:
+    typing 3s steps(30, end),
+    blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: var(--color-accent); }
+}
+
+/* ----------------------------------------
+   TEMPLATE: Morphing Background
+   ---------------------------------------- */
+
+.morph-bg {
+  background: linear-gradient(-45deg,
+    var(--color-bg),
+    var(--color-bg-secondary),
+    rgba(240, 185, 11, 0.1),
+    var(--color-bg)
+  );
+  background-size: 400% 400%;
+  animation: morphGradient 15s ease infinite;
+}
+
+@keyframes morphGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ----------------------------------------
+   TEMPLATE: Ripple Effect
+   ---------------------------------------- */
+
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.ripple:active::after {
+  width: 300px;
+  height: 300px;
+}

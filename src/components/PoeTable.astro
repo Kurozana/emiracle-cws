@@ -1,0 +1,176 @@
+---
+/**
+ * PoE-style Table Component
+ * For displaying data like "Preferred damage modifiers", gear stats, etc.
+ */
+
+interface Props {
+  title: string;
+  columns?: string[];
+  rarity?: 'normal' | 'magic' | 'rare' | 'unique' | 'gem';
+}
+
+const { title, columns = [], rarity = 'rare' } = Astro.props;
+---
+
+<div class:list={['poe-table', `poe-table--${rarity}`]}>
+  <div class="poe-table__header">
+    <span class="poe-table__title">{title}</span>
+  </div>
+  <div class="poe-table__separator"></div>
+
+  {columns.length > 0 && (
+    <div class="poe-table__columns" style={`--col-count: ${columns.length}`}>
+      {columns.map((col) => (
+        <span class="poe-table__column-header">{col}</span>
+      ))}
+    </div>
+  )}
+
+  <div class="poe-table__body">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .poe-table {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.92) 0%,
+      rgba(12, 12, 12, 0.95) 100%
+    );
+    border: 1px solid #3b3b3b;
+    font-family: 'Fontin', Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    box-shadow:
+      0 4px 20px rgba(0, 0, 0, 0.5),
+      inset 0 0 40px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Header */
+  .poe-table__header {
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+  }
+
+  .poe-table__title {
+    font-size: 1.15rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  /* Rarity colors */
+  .poe-table--normal .poe-table__title { color: var(--color-normal); }
+  .poe-table--magic .poe-table__title { color: var(--color-magic); }
+  .poe-table--rare .poe-table__title { color: var(--color-rare); }
+  .poe-table--unique .poe-table__title { color: var(--color-unique); }
+  .poe-table--gem .poe-table__title { color: var(--color-gem); }
+
+  /* Header backgrounds */
+  .poe-table--rare .poe-table__header {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(128, 128, 60, 0.2) 30%,
+      rgba(128, 128, 60, 0.2) 70%,
+      transparent 100%
+    );
+  }
+
+  .poe-table--unique .poe-table__header {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(175, 96, 37, 0.2) 30%,
+      rgba(175, 96, 37, 0.2) 70%,
+      transparent 100%
+    );
+  }
+
+  .poe-table--gem .poe-table__header {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-accent-glow) 30%,
+      var(--color-accent-glow) 70%,
+      transparent 100%
+    );
+  }
+
+  /* Separator */
+  .poe-table__separator {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #4a4a4a 15%,
+      #4a4a4a 85%,
+      transparent 100%
+    );
+    margin: 0 1rem;
+  }
+
+  /* Column headers */
+  .poe-table__columns {
+    display: grid;
+    grid-template-columns: repeat(var(--col-count, 2), 1fr);
+    padding: 0.5rem 1.25rem;
+    border-bottom: 1px solid rgba(74, 74, 74, 0.5);
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .poe-table__column-header {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .poe-table__column-header:not(:first-child) {
+    text-align: center;
+  }
+
+  /* Body */
+  .poe-table__body {
+    padding: 0.5rem 0;
+  }
+
+  /* Row styling (applied via global) */
+  .poe-table__body :global(.poe-row) {
+    display: grid;
+    grid-template-columns: repeat(var(--col-count, 2), 1fr);
+    padding: 0.4rem 1.25rem;
+    transition: background-color 0.15s ease;
+    color: var(--color-normal);
+  }
+
+  .poe-table__body :global(.poe-row:hover) {
+    background: var(--color-accent-glow);
+  }
+
+  .poe-table__body :global(.poe-row > *:not(:first-child)) {
+    text-align: center;
+  }
+
+  /* Alternating row backgrounds */
+  .poe-table__body :global(.poe-row:nth-child(even)) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .poe-table__body :global(.poe-row:nth-child(even):hover) {
+    background: var(--color-accent-glow);
+  }
+
+  /* Cell modifiers */
+  .poe-table__body :global(.cell-good) { color: #00ff00; }
+  .poe-table__body :global(.cell-bad) { color: #ff4444; }
+  .poe-table__body :global(.cell-neutral) { color: var(--color-normal); }
+  .poe-table__body :global(.cell-highlight) { color: var(--color-magic); }
+
+  /* Priority indicators */
+  .poe-table__body :global(.priority-1) { color: #00ff00; }
+  .poe-table__body :global(.priority-2) { color: #88ff88; }
+  .poe-table__body :global(.priority-3) { color: var(--color-normal); }
+  .poe-table__body :global(.priority-4) { color: var(--color-text-muted); }
+</style>

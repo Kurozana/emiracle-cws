@@ -1,0 +1,168 @@
+---
+/**
+ * PoE-style Tooltip Component
+ * Mimics the in-game item/mod tooltip styling
+ */
+
+interface Props {
+  title?: string;
+  rarity?: 'normal' | 'magic' | 'rare' | 'unique' | 'gem' | 'currency';
+  headerType?: 'single' | 'double'; // single line or double-bordered header
+}
+
+const { title, rarity = 'rare', headerType = 'single' } = Astro.props;
+
+const rarityColors: Record<string, string> = {
+  normal: 'var(--color-normal)',
+  magic: 'var(--color-magic)',
+  rare: 'var(--color-rare)',
+  unique: 'var(--color-unique)',
+  gem: 'var(--color-gem)',
+  currency: 'var(--color-currency)',
+};
+---
+
+<div class:list={['poe-tooltip', `poe-tooltip--${rarity}`, `poe-tooltip--${headerType}`]}>
+  {title && (
+    <div class="poe-tooltip__header">
+      <span class="poe-tooltip__title">{title}</span>
+    </div>
+  )}
+  <div class="poe-tooltip__separator"></div>
+  <div class="poe-tooltip__content">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .poe-tooltip {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(15, 15, 15, 0.95) 100%
+    );
+    border: 1px solid #3b3b3b;
+    border-radius: 0;
+    font-family: 'Fontin', 'Fontin-Regular', Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    max-width: 450px;
+    position: relative;
+    box-shadow:
+      0 0 10px rgba(0, 0, 0, 0.8),
+      inset 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Header styles */
+  .poe-tooltip__header {
+    padding: 0.5rem 1rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .poe-tooltip__title {
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  /* Rarity-specific header colors */
+  .poe-tooltip--normal .poe-tooltip__title { color: var(--color-normal); }
+  .poe-tooltip--magic .poe-tooltip__title { color: var(--color-magic); }
+  .poe-tooltip--rare .poe-tooltip__title { color: var(--color-rare); }
+  .poe-tooltip--unique .poe-tooltip__title { color: var(--color-unique); }
+  .poe-tooltip--gem .poe-tooltip__title { color: var(--color-gem); }
+  .poe-tooltip--currency .poe-tooltip__title { color: var(--color-currency); }
+
+  /* Double header style (like rare/unique items) */
+  .poe-tooltip--double .poe-tooltip__header {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(100, 100, 50, 0.3) 25%,
+      rgba(100, 100, 50, 0.3) 75%,
+      transparent 100%
+    );
+  }
+
+  .poe-tooltip--double.poe-tooltip--unique .poe-tooltip__header {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(175, 96, 37, 0.3) 25%,
+      rgba(175, 96, 37, 0.3) 75%,
+      transparent 100%
+    );
+  }
+
+  .poe-tooltip--double.poe-tooltip--gem .poe-tooltip__header {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-accent-glow) 25%,
+      var(--color-accent-glow) 75%,
+      transparent 100%
+    );
+  }
+
+  /* Separator line */
+  .poe-tooltip__separator {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #4a4a4a 20%,
+      #4a4a4a 80%,
+      transparent 100%
+    );
+    margin: 0 0.5rem;
+  }
+
+  /* Content area */
+  .poe-tooltip__content {
+    padding: 0.75rem 1rem;
+    color: var(--color-normal);
+  }
+
+  /* Global styles for content inside tooltip */
+  .poe-tooltip__content :global(p) {
+    margin: 0 0 0.25rem;
+  }
+
+  .poe-tooltip__content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  /* Modifier text colors */
+  .poe-tooltip__content :global(.mod-fire) { color: var(--color-fire); }
+  .poe-tooltip__content :global(.mod-cold) { color: var(--color-cold); }
+  .poe-tooltip__content :global(.mod-lightning) { color: var(--color-lightning); }
+  .poe-tooltip__content :global(.mod-chaos) { color: var(--color-chaos); }
+  .poe-tooltip__content :global(.mod-physical) { color: var(--color-physical); }
+  .poe-tooltip__content :global(.mod-magic) { color: var(--color-magic); }
+  .poe-tooltip__content :global(.mod-crafted) { color: var(--color-crafted); }
+  .poe-tooltip__content :global(.mod-corrupted) { color: var(--color-corrupted); }
+  .poe-tooltip__content :global(.mod-unique) { color: var(--color-unique); }
+
+  /* Implicit/explicit separator */
+  .poe-tooltip__content :global(.separator) {
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      #4a4a4a 20%,
+      #4a4a4a 80%,
+      transparent 100%
+    );
+    margin: 0.5rem 0;
+  }
+
+  /* Value highlighting */
+  .poe-tooltip__content :global(.value) {
+    color: #8888ff;
+  }
+
+  .poe-tooltip__content :global(.value-augmented) {
+    color: #8888ff;
+  }
+</style>

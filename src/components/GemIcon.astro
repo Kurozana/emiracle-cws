@@ -1,0 +1,164 @@
+---
+/**
+ * Gem Icon Component
+ * Displays a skill gem icon with name underneath
+ * Supports animated TAGs via SkillName component
+ *
+ * CRITICAL: TAGs must be passed as structured metadata.
+ * Effects are ONLY applied to explicitly defined TAGs.
+ */
+
+import SkillName from './SkillName.astro';
+
+interface SkillTag {
+  prefix: "OF" | "OF THE";
+  name: string;
+}
+
+interface Props {
+  baseName: string;
+  tags?: SkillTag[];
+  icon?: string;
+  color?: 'red' | 'green' | 'blue' | 'white';
+  size?: 'sm' | 'md' | 'lg';
+  isSupport?: boolean;
+}
+
+const {
+  baseName,
+  tags = [],
+  icon,
+  color = 'red',
+  size = 'md',
+  isSupport = false
+} = Astro.props;
+
+const colorMap = {
+  red: '#c41e3a',    // Strength gems
+  green: '#1eff00',  // Dexterity gems
+  blue: '#4169e1',   // Intelligence gems
+  white: '#e0e0e0',  // Support gems
+};
+
+const sizeMap = {
+  sm: { icon: '36px', font: '0.7rem' },
+  md: { icon: '48px', font: '0.75rem' },
+  lg: { icon: '64px', font: '0.85rem' },
+};
+---
+
+<div class:list={['gem-icon', `gem-icon--${size}`, { 'gem-icon--support': isSupport }]}>
+  <div
+    class="gem-icon__image"
+    style={`--gem-color: ${colorMap[color]}; --gem-size: ${sizeMap[size].icon}`}
+  >
+    {icon ? (
+      <img src={icon} alt={baseName} loading="lazy" />
+    ) : (
+      <div class="gem-icon__placeholder">
+        <span class="gem-icon__letter">{baseName.charAt(0)}</span>
+      </div>
+    )}
+  </div>
+  <span class="gem-icon__name" style={`font-size: ${sizeMap[size].font}`}>
+    <SkillName baseName={baseName} tags={tags} />
+  </span>
+</div>
+
+<style>
+  .gem-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    text-align: center;
+  }
+
+  .gem-icon__image {
+    width: var(--gem-size);
+    height: var(--gem-size);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(
+      145deg,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
+    /* Main skills: soft, subtle border */
+    border: 1px solid color-mix(in srgb, var(--gem-color) 40%, transparent);
+    box-shadow: none;
+    transition: all 0.25s ease;
+  }
+
+  .gem-icon:hover .gem-icon__image {
+    transform: scale(1.05);
+    border-color: color-mix(in srgb, var(--gem-color) 60%, transparent);
+  }
+
+  .gem-icon__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .gem-icon__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--gem-color) 30%, black) 0%,
+      color-mix(in srgb, var(--gem-color) 15%, black) 100%
+    );
+  }
+
+  .gem-icon__letter {
+    font-size: calc(var(--gem-size) * 0.4);
+    font-weight: 700;
+    color: var(--gem-color);
+    text-shadow: 0 0 10px var(--gem-color);
+  }
+
+  .gem-icon__name {
+    color: var(--color-text-muted);
+    font-weight: 500;
+    max-width: 80px;
+    line-height: 1.2;
+    transition: color 0.2s ease;
+  }
+
+  .gem-icon:hover .gem-icon__name {
+    color: var(--color-text);
+  }
+
+  /* Support gem styling - FULLY TRANSPARENT */
+  .gem-icon--support .gem-icon__image {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .gem-icon--support:hover .gem-icon__image {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .gem-icon--support .gem-icon__image img {
+    object-fit: contain;
+  }
+
+  /* Size variations */
+  .gem-icon--sm .gem-icon__name {
+    max-width: 60px;
+  }
+
+  .gem-icon--lg .gem-icon__name {
+    max-width: 100px;
+  }
+</style>

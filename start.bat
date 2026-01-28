@@ -1,0 +1,9 @@
+@echo off
+echo Starting Emiracle CWS...
+echo.
+echo Installing dependencies if needed...
+call npm install
+echo.
+echo Opening browser and starting dev server...
+start http://localhost:4321
+npm run dev

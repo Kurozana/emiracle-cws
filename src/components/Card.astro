@@ -1,0 +1,71 @@
+---
+interface Props {
+  title: string;
+  href?: string;
+  variant?: 'default' | 'highlight';
+}
+
+const { title, href, variant = 'default' } = Astro.props;
+
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag
+  href={href}
+  class:list={['card', `card--${variant}`]}
+>
+  <h3 class="card-title">{title}</h3>
+  <div class="card-body">
+    <slot />
+  </div>
+</Tag>
+
+<style>
+  .card {
+    display: block;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s ease;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-hover);
+  }
+
+  .card--highlight {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
+  }
+
+  .card--highlight:hover {
+    border-color: var(--color-accent-hover);
+  }
+
+  .card-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .card:hover .card-title {
+    color: var(--color-accent);
+  }
+
+  .card-body {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .card-body :global(p) {
+    margin: 0;
+  }
+</style>

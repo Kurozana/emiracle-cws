@@ -1,0 +1,79 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import Card from '../components/Card.astro';
+---
+
+<BaseLayout title="Gear Guide">
+  <Navigation slot="header" />
+
+  <section class="page-header">
+    <div class="container">
+      <h1 class="animate-fade-in-up">Gear Guide</h1>
+      <p class="text-muted animate-fade-in-up delay-100">
+        Best-in-slot items and budget alternatives
+      </p>
+    </div>
+  </section>
+
+  <section class="gear-content section">
+    <div class="container">
+      <div class="gear-grid grid grid-2">
+        <Card title="Weapon" variant="default" animationClass="hover-border-glow animate-fade-in-up">
+          <p class="text-unique">Placeholder Unique Weapon</p>
+          <p class="placeholder-text">[Weapon recommendations will be added]</p>
+        </Card>
+
+        <Card title="Shield / Off-hand" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-100">
+          <p class="placeholder-text">[Off-hand recommendations will be added]</p>
+        </Card>
+
+        <Card title="Helmet" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-200">
+          <p class="placeholder-text">[Helmet recommendations will be added]</p>
+        </Card>
+
+        <Card title="Body Armour" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-300">
+          <p class="placeholder-text">[Body armour recommendations will be added]</p>
+        </Card>
+
+        <Card title="Gloves" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-400">
+          <p class="placeholder-text">[Gloves recommendations will be added]</p>
+        </Card>
+
+        <Card title="Boots" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-500">
+          <p class="placeholder-text">[Boots recommendations will be added]</p>
+        </Card>
+
+        <Card title="Amulet" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-600">
+          <p class="placeholder-text">[Amulet recommendations will be added]</p>
+        </Card>
+
+        <Card title="Rings" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-700">
+          <p class="placeholder-text">[Ring recommendations will be added]</p>
+        </Card>
+
+        <Card title="Belt" variant="default" animationClass="hover-border-glow animate-fade-in-up delay-800">
+          <p class="placeholder-text">[Belt recommendations will be added]</p>
+        </Card>
+
+        <Card title="Jewels" variant="highlight" animationClass="hover-border-glow animate-fade-in-up delay-800">
+          <p class="placeholder-text">[Jewel recommendations will be added]</p>
+        </Card>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-header {
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg-secondary);
+    text-align: center;
+  }
+
+  .placeholder-text {
+    color: var(--color-text-subtle);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+</style>

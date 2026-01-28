@@ -1,0 +1,471 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import SocialLinks from '../components/SocialLinks.astro';
+
+// FAQ Categories and Questions
+const faqCategories = [
+  {
+    id: 'basics',
+    name: 'Build Basics',
+    icon: '?',
+    questions: [
+      {
+        q: 'What is Cast When Stunned (CWS)?',
+        a: '[Answer will be added - explain the mechanic and build concept]'
+      },
+      {
+        q: 'What class/ascendancy should I play?',
+        a: '[Answer will be added - recommended class and ascendancy choices]'
+      },
+      {
+        q: 'Is this build beginner-friendly?',
+        a: '[Answer will be added - difficulty assessment and learning curve]'
+      },
+      {
+        q: 'What are the pros and cons of this build?',
+        a: '[Answer will be added - strengths and weaknesses]'
+      },
+    ]
+  },
+  {
+    id: 'gear',
+    name: 'Gear & Items',
+    icon: '⚔',
+    questions: [
+      {
+        q: "What's the minimum budget to start?",
+        a: '[Answer will be added - budget tiers and expectations]'
+      },
+      {
+        q: 'What are the must-have uniques?',
+        a: '[Answer will be added - essential unique items]'
+      },
+      {
+        q: 'What stats should I prioritize on rare gear?',
+        a: '[Answer will be added - stat priorities by slot]'
+      },
+      {
+        q: 'What jewels do I need?',
+        a: '[Answer will be added - jewel recommendations]'
+      },
+    ]
+  },
+  {
+    id: 'mechanics',
+    name: 'Mechanics & Gameplay',
+    icon: '⚙',
+    questions: [
+      {
+        q: 'How does the stun threshold work?',
+        a: '[Answer will be added - stun mechanics explanation]'
+      },
+      {
+        q: 'What skills trigger from CWS?',
+        a: '[Answer will be added - supported skills list]'
+      },
+      {
+        q: 'How do I sustain being stunned?',
+        a: '[Answer will be added - stun sustain mechanics]'
+      },
+      {
+        q: 'What is the ideal playstyle?',
+        a: '[Answer will be added - how to play the build effectively]'
+      },
+    ]
+  },
+  {
+    id: 'endgame',
+    name: 'Endgame & Scaling',
+    icon: '★',
+    questions: [
+      {
+        q: 'What content can this build do?',
+        a: '[Answer will be added - content capabilities]'
+      },
+      {
+        q: 'Is this build hardcore viable?',
+        a: '[Answer will be added - HC viability assessment]'
+      },
+      {
+        q: 'How do I scale damage in endgame?',
+        a: '[Answer will be added - damage scaling strategies]'
+      },
+      {
+        q: 'What are the upgrade priorities?',
+        a: '[Answer will be added - upgrade path recommendations]'
+      },
+    ]
+  },
+  {
+    id: 'community',
+    name: 'Community & Resources',
+    icon: '♦',
+    questions: [
+      {
+        q: "Where can I find Emiracles' streams?",
+        a: 'social-links' // Special flag to render social links
+      },
+      {
+        q: 'Is there a Discord community?',
+        a: '[Answer will be added - Discord invite info]'
+      },
+      {
+        q: 'Where can I ask questions about the build?',
+        a: '[Answer will be added - community resources]'
+      },
+    ]
+  },
+];
+---
+
+<BaseLayout title="FAQ">
+  <Navigation slot="header" />
+
+  <section class="page-header">
+    <div class="container">
+      <h1 class="animate-fade-in-up">Frequently Asked Questions</h1>
+      <p class="text-muted animate-fade-in-up delay-100">
+        Everything you need to know about the Cast When Stunned build
+      </p>
+    </div>
+  </section>
+
+  <!-- Category Navigation -->
+  <section class="faq-nav">
+    <div class="container">
+      <div class="category-tabs">
+        {faqCategories.map((category, index) => (
+          <a
+            href={`#${category.id}`}
+            class="category-tab animate-fade-in-up"
+            style={`animation-delay: ${index * 50}ms`}
+          >
+            <span class="category-icon">{category.icon}</span>
+            <span class="category-name">{category.name}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Content -->
+  <section class="faq-content section">
+    <div class="container">
+      {faqCategories.map((category, catIndex) => (
+        <div id={category.id} class="faq-category animate-fade-in-up" style={`animation-delay: ${catIndex * 100}ms`}>
+          <h2 class="category-title">
+            <span class="category-icon-large">{category.icon}</span>
+            {category.name}
+          </h2>
+
+          <div class="faq-list">
+            {category.questions.map((faq, qIndex) => (
+              <details class="faq-item">
+                <summary class="faq-question">
+                  <span class="question-text">{faq.q}</span>
+                  <span class="question-toggle"></span>
+                </summary>
+                <div class="faq-answer">
+                  {faq.a === 'social-links' ? (
+                    <div class="social-answer">
+                      <p>Follow Emiracles on these platforms:</p>
+                      <SocialLinks
+                        discord="#"
+                        youtube="#"
+                        twitch="#"
+                        size="lg"
+                        showLabels={true}
+                      />
+                    </div>
+                  ) : (
+                    <p class="placeholder-text">{faq.a}</p>
+                  )}
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <!-- Still have questions? -->
+      <div class="faq-cta animate-fade-in-up">
+        <h3>Still have questions?</h3>
+        <p class="text-muted">Join the community and ask directly!</p>
+        <SocialLinks
+          discord="#"
+          youtube="#"
+          twitch="#"
+          size="md"
+          showLabels={true}
+        />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-header {
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg-secondary);
+    text-align: center;
+  }
+
+  .page-header h1 {
+    color: var(--color-accent);
+  }
+
+  /* Category Navigation */
+  .faq-nav {
+    background: var(--color-bg-tertiary);
+    padding: var(--spacing-lg) 0;
+    position: sticky;
+    top: 60px;
+    z-index: 50;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .category-tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    overflow-x: auto;
+    padding-bottom: var(--spacing-sm);
+    scrollbar-width: none;
+  }
+
+  .category-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .category-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 0.75rem 1.25rem;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+  }
+
+  .category-tab:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-accent-glow);
+    transform: translateY(-2px);
+  }
+
+  .category-icon {
+    font-size: 1.1rem;
+  }
+
+  /* FAQ Categories */
+  .faq-category {
+    margin-bottom: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+  }
+
+  .category-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .category-icon-large {
+    font-size: 1.5rem;
+    color: var(--color-accent);
+  }
+
+  /* FAQ Items */
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .faq-item {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+
+  .faq-item:hover {
+    border-color: var(--color-border-hover);
+  }
+
+  .faq-item[open] {
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 20px var(--color-accent-glow);
+  }
+
+  .faq-question {
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+    list-style: none;
+    user-select: none;
+  }
+
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+
+  .question-text {
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--color-text);
+    transition: color 0.2s ease;
+  }
+
+  .faq-item:hover .question-text {
+    color: var(--color-accent);
+  }
+
+  .question-toggle {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    border: 2px solid var(--color-accent);
+    border-radius: 50%;
+    transition: all 0.25s ease;
+  }
+
+  .question-toggle::before,
+  .question-toggle::after {
+    content: '';
+    position: absolute;
+    background: var(--color-accent);
+    transition: all 0.25s ease;
+  }
+
+  .question-toggle::before {
+    width: 10px;
+    height: 2px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .question-toggle::after {
+    width: 2px;
+    height: 10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .faq-item[open] .question-toggle {
+    background: var(--color-accent);
+    transform: rotate(45deg);
+  }
+
+  .faq-item[open] .question-toggle::before,
+  .faq-item[open] .question-toggle::after {
+    background: var(--color-bg);
+  }
+
+  .faq-answer {
+    padding: 0 var(--spacing-lg) var(--spacing-lg);
+    color: var(--color-text-muted);
+    line-height: 1.7;
+    border-top: 1px solid var(--color-border);
+    margin-top: -1px;
+    padding-top: var(--spacing-lg);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .placeholder-text {
+    color: var(--color-text-subtle);
+    font-style: italic;
+  }
+
+  .social-answer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .social-answer p {
+    margin: 0;
+  }
+
+  /* CTA Section */
+  .faq-cta {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    border: 1px solid var(--color-border);
+  }
+
+  .faq-cta h3 {
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .faq-cta p {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .faq-cta :global(.social-links) {
+    justify-content: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .faq-nav {
+      top: 0;
+    }
+
+    .category-tab {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .category-name {
+      display: none;
+    }
+
+    .category-icon {
+      font-size: 1.25rem;
+    }
+
+    .faq-question {
+      padding: var(--spacing-md);
+    }
+
+    .question-text {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<script>
+  // Smooth scroll to category when clicking nav tabs
+  document.querySelectorAll('.category-tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = tab.getAttribute('href');
+      const target = document.querySelector(targetId);
+      if (target) {
+        const navHeight = document.querySelector('.faq-nav')?.offsetHeight || 0;
+        const targetPosition = target.getBoundingClientRect().top + window.scrollY - navHeight - 20;
+        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+      }
+    });
+  });
+</script>

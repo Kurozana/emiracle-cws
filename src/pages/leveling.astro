@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import Card from '../components/Card.astro';
+---
+
+<BaseLayout title="Leveling Guide">
+  <Navigation slot="header" />
+
+  <section class="page-header">
+    <div class="container">
+      <h1 class="animate-fade-in-up">Leveling Guide</h1>
+      <p class="text-muted animate-fade-in-up delay-100">
+        From Twilight Strand to Maps
+      </p>
+    </div>
+  </section>
+
+  <section class="leveling-content section">
+    <div class="container">
+      <div class="timeline">
+        <div class="timeline-item animate-fade-in-left">
+          <div class="timeline-marker">1</div>
+          <Card title="Acts 1-3" animationClass="hover-lift">
+            <p class="text-muted">Levels 1-30</p>
+            <p class="placeholder-text">[Early leveling tips will be added]</p>
+          </Card>
+        </div>
+
+        <div class="timeline-item animate-fade-in-right delay-100">
+          <div class="timeline-marker">2</div>
+          <Card title="Acts 4-6" animationClass="hover-lift">
+            <p class="text-muted">Levels 30-50</p>
+            <p class="placeholder-text">[Mid-act leveling tips will be added]</p>
+          </Card>
+        </div>
+
+        <div class="timeline-item animate-fade-in-left delay-200">
+          <div class="timeline-marker">3</div>
+          <Card title="Acts 7-10" animationClass="hover-lift">
+            <p class="text-muted">Levels 50-70</p>
+            <p class="placeholder-text">[Late-act leveling tips will be added]</p>
+          </Card>
+        </div>
+
+        <div class="timeline-item animate-fade-in-right delay-300">
+          <div class="timeline-marker">4</div>
+          <Card title="Early Maps" variant="highlight" animationClass="hover-lift">
+            <p class="text-muted">Levels 70-85</p>
+            <p class="placeholder-text">[Early mapping tips will be added]</p>
+          </Card>
+        </div>
+
+        <div class="timeline-item animate-fade-in-left delay-400">
+          <div class="timeline-marker">5</div>
+          <Card title="Endgame" variant="highlight" animationClass="hover-lift">
+            <p class="text-muted">Levels 85+</p>
+            <p class="placeholder-text">[Endgame progression will be added]</p>
+          </Card>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-header {
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg-secondary);
+    text-align: center;
+  }
+
+  .timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      var(--color-border),
+      var(--color-accent),
+      var(--color-border)
+    );
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-left: 60px;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 20px;
+    width: 40px;
+    height: 40px;
+    background: var(--color-bg);
+    border: 2px solid var(--color-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--color-accent);
+    z-index: 1;
+  }
+
+  .placeholder-text {
+    color: var(--color-text-subtle);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 768px) {
+    .timeline::before {
+      left: 15px;
+    }
+
+    .timeline-item {
+      padding-left: 50px;
+    }
+
+    .timeline-marker {
+      width: 30px;
+      height: 30px;
+      font-size: 0.9rem;
+    }
+  }
+</style>

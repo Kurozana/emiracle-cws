@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import GemIcon from '../components/GemIcon.astro';
+import skillsData from '../data/skills.json';
+import { type SkillsData } from '../utils/skills';
+
+const data = skillsData as SkillsData;
+const { skillSetups, skills } = data;
+
+// Helper to get skill props - passes structured data, no string building
+function getSkillProps(skillId: string) {
+  const skill = skills[skillId];
+  if (!skill) return null;
+  return {
+    baseName: skill.baseName,
+    tags: skill.tags,
+    color: skill.color,
+    isSupport: skill.isSupport,
+    icon: skill.icon
+  };
+}
+---
+
+<BaseLayout title="Skill Gems">
+  <Navigation slot="header" />
+
+  <section class="page-header">
+    <div class="container">
+      <h1>Skill Gems</h1>
+      <p class="text-muted">
+        Gem links, support priorities, and alternative setups
+      </p>
+    </div>
+  </section>
+
+  <section class="skills-content section">
+    <div class="container">
+
+      {Object.entries(skillSetups).map(([key, setup]) => {
+        const isLinked = setup.isLinked;
+        return (
+          <div class="skill-section">
+            <h2>{setup.title}</h2>
+            <p class="section-desc">{setup.description}</p>
+
+            <div class:list={['gem-setup', { 'gem-setup--6link': isLinked }]}>
+              {setup.rows.map((row, rowIndex) => (
+                <div class="gem-row">
+                  {row.map((item, itemIndex) => {
+                    const skillProps = getSkillProps(item.skillId);
+                    if (!skillProps) return null;
+
+                    return (
+                      <>
+                        {isLinked && itemIndex > 0 && (
+                          <span class="link-indicator">───</span>
+                        )}
+                        <GemIcon
+                          baseName={skillProps.baseName}
+                          tags={skillProps.tags}
+                          color={skillProps.color}
+                          size="md"
+                          isSupport={skillProps.isSupport}
+                          icon={skillProps.icon}
+                        />
+                      </>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            {key === 'main' && (
+              <p class="placeholder-note">
+                Skills with TAGs display animated fire/galaxy effects (metadata-driven only)
+              </p>
+            )}
+          </div>
+        );
+      })}
+
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-header {
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg-secondary);
+    text-align: center;
+    transition: background-color var(--transition-theme);
+  }
+
+  .page-header h1 {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .skills-content {
+    padding-bottom: var(--spacing-xl);
+  }
+
+  .skill-section {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all 0.25s ease;
+  }
+
+  .skill-section:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  .skill-section h2 {
+    margin-bottom: var(--spacing-xs);
+    font-size: 1.25rem;
+  }
+
+  .section-desc {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .gem-setup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+
+  .gem-setup--6link {
+    background: var(--color-bg-secondary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-border);
+  }
+
+  .gem-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+
+  .link-indicator {
+    color: var(--color-text-subtle);
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: -2px;
+    opacity: 0.6;
+    user-select: none;
+  }
+
+  .placeholder-note {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-accent-glow);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .gem-row {
+      gap: var(--spacing-sm);
+    }
+
+    .link-indicator {
+      display: none;
+    }
+  }
+</style>

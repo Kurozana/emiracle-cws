@@ -1,0 +1,116 @@
+{
+  "version": "1.0.0",
+  "skillSetups": {
+    "main": {
+      "title": "Main Skill Setup",
+      "description": "Your primary 6-link damage setup",
+      "isLinked": true,
+      "rows": [
+        [
+          { "skillId": "detonate-dead-scavenging" },
+          { "skillId": "cast-when-stunned" },
+          { "skillId": "concentrated-effect" }
+        ],
+        [
+          { "skillId": "aoe-support" },
+          { "skillId": "burning-damage" },
+          { "skillId": "swift-affliction" }
+        ]
+      ]
+    },
+    "auras": {
+      "title": "Aura Setup",
+      "description": "Defensive and offensive auras",
+      "isLinked": false,
+      "rows": [
+        [
+          { "skillId": "malevolence" },
+          { "skillId": "purity-of-fire" },
+          { "skillId": "flesh-and-stone" },
+          { "skillId": "petrified-blood" }
+        ]
+      ]
+    }
+  },
+  "skills": {
+    "cast-when-stunned": {
+      "baseName": "Cast When Stunned",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/CWS.png",
+      "tags": []
+    },
+    "concentrated-effect": {
+      "baseName": "Concentrated Effect",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Concentrated_Effect_Support_inventory_icon.png",
+      "tags": []
+    },
+    "burning-damage": {
+      "baseName": "Burning Damage",
+      "color": "red",
+      "isSupport": true,
+      "icon": "/gems/Burning_Damage_Support_inventory_icon.png",
+      "tags": []
+    },
+    "detonate-dead": {
+      "baseName": "Detonate Dead",
+      "color": "green",
+      "isSupport": false,
+      "icon": "/gems/Detonate_Dead.png",
+      "tags": []
+    },
+    "detonate-dead-scavenging": {
+      "baseName": "Detonate Dead",
+      "color": "green",
+      "isSupport": false,
+      "icon": "/gems/Detonate_Dead.png",
+      "tags": [
+        { "prefix": "OF", "name": "SCAVENGING" }
+      ]
+    },
+    "aoe-support": {
+      "baseName": "Increased Area of Effect",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Aoe_Support.png",
+      "tags": []
+    },
+    "flesh-and-stone": {
+      "baseName": "Flesh and Stone",
+      "color": "red",
+      "isSupport": false,
+      "icon": "/gems/Flesh_and_Stone_skill_icon.png",
+      "tags": []
+    },
+    "malevolence": {
+      "baseName": "Malevolence",
+      "color": "green",
+      "isSupport": false,
+      "icon": "/gems/Malevolence_skill_icon.png",
+      "tags": []
+    },
+    "petrified-blood": {
+      "baseName": "Petrified Blood",
+      "color": "red",
+      "isSupport": false,
+      "icon": "/gems/Petrified_Blood_skill_icon.png",
+      "tags": []
+    },
+    "purity-of-fire": {
+      "baseName": "Purity of Fire",
+      "color": "red",
+      "isSupport": false,
+      "icon": "/gems/Purity_of_Fire_skill_icon.png",
+      "tags": []
+    },
+    "swift-affliction": {
+      "baseName": "Swift Affliction",
+      "color": "green",
+      "isSupport": true,
+      "icon": "/gems/swift-affliction.png",
+      "tags": []
+    }
+  }
+}

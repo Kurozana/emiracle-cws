@@ -1,0 +1,129 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import Card from '../components/Card.astro';
+import Button from '../components/Button.astro';
+---
+
+<BaseLayout title="Home">
+  <Navigation slot="header" />
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Cast When Stunned
+        </h1>
+        <p class="hero-subtitle">
+          The complete guide to Emiracles' CWS build for Path of Exile
+        </p>
+        <div class="hero-actions">
+          <Button href="/guide" variant="primary" size="lg">
+            View Build Guide
+          </Button>
+          <Button href="/leveling" variant="secondary" size="lg">
+            Leveling Guide
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features section">
+    <div class="container">
+      <h2 class="text-center">What's Inside</h2>
+      <div class="grid grid-3">
+        <Card title="Build Overview" href="/guide">
+          <p>Complete breakdown of the Cast When Stunned mechanics, passive tree, and playstyle.</p>
+        </Card>
+
+        <Card title="Gear Guide" href="/gear">
+          <p>Best-in-slot items, budget alternatives, and crafting tips for every slot.</p>
+        </Card>
+
+        <Card title="Skill Gems" href="/skills">
+          <p>Gem links, support gem priorities, and alternative setups explained.</p>
+        </Card>
+
+        <Card title="Leveling" href="/leveling">
+          <p>Step-by-step leveling guide from Act 1 to endgame mapping.</p>
+        </Card>
+
+        <Card title="FAQ" href="/faq">
+          <p>Common questions answered and troubleshooting tips.</p>
+        </Card>
+
+        <Card title="Videos" href="#" variant="highlight">
+          <p>Links to Emiracles' latest videos and stream highlights.</p>
+        </Card>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta section">
+    <div class="container text-center">
+      <h2>Ready to Get Stunned?</h2>
+      <p class="text-muted">
+        Join the community and master the Cast When Stunned build.
+      </p>
+      <Button href="/guide" variant="primary" size="lg">
+        Start Your Journey
+      </Button>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg);
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+    max-width: 500px;
+    margin: 0 auto var(--spacing-lg);
+    color: var(--color-text-muted);
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .features {
+    background: var(--color-bg-secondary);
+    transition: background-color var(--transition-theme);
+  }
+
+  .features h2 {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .cta {
+    background: var(--color-bg);
+    padding: var(--spacing-xl) 0;
+  }
+
+  .cta h2 {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .cta p {
+    margin-bottom: var(--spacing-lg);
+  }
+</style>

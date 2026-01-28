@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+import Card from '../components/Card.astro';
+---
+
+<BaseLayout title="Build Guide">
+  <Navigation slot="header" />
+
+  <section class="page-header">
+    <div class="container">
+      <h1 class="animate-fade-in-up">Build Guide</h1>
+      <p class="text-muted animate-fade-in-up delay-100">
+        Complete breakdown of the Cast When Stunned build
+      </p>
+    </div>
+  </section>
+
+  <section class="guide-content section">
+    <div class="container">
+      <div class="guide-nav">
+        <h3>Quick Navigation</h3>
+        <ul>
+          <li><a href="#overview" class="hover-underline">Overview</a></li>
+          <li><a href="#mechanics" class="hover-underline">How It Works</a></li>
+          <li><a href="#passive-tree" class="hover-underline">Passive Tree</a></li>
+          <li><a href="#ascendancy" class="hover-underline">Ascendancy</a></li>
+          <li><a href="#playstyle" class="hover-underline">Playstyle</a></li>
+        </ul>
+      </div>
+
+      <article class="guide-article">
+        <section id="overview" class="guide-section animate-on-scroll">
+          <h2>Overview</h2>
+          <Card variant="highlight">
+            <p>
+              <strong>Cast When Stunned (CWS)</strong> is a unique and powerful build archetype
+              pioneered by Emiracles. This guide will walk you through everything you need to
+              know to make this build work.
+            </p>
+          </Card>
+          <p class="placeholder-text">
+            [Content from Emiracles' guide will be added here]
+          </p>
+        </section>
+
+        <section id="mechanics" class="guide-section animate-on-scroll">
+          <h2>How It Works</h2>
+          <p class="placeholder-text">
+            [Mechanics explanation will be added here]
+          </p>
+        </section>
+
+        <section id="passive-tree" class="guide-section animate-on-scroll">
+          <h2>Passive Tree</h2>
+          <p class="placeholder-text">
+            [Passive tree information and PoB links will be added here]
+          </p>
+        </section>
+
+        <section id="ascendancy" class="guide-section animate-on-scroll">
+          <h2>Ascendancy</h2>
+          <p class="placeholder-text">
+            [Ascendancy choices and explanations will be added here]
+          </p>
+        </section>
+
+        <section id="playstyle" class="guide-section animate-on-scroll">
+          <h2>Playstyle</h2>
+          <p class="placeholder-text">
+            [Playstyle tips and mapping strategies will be added here]
+          </p>
+        </section>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-header {
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg-secondary);
+    text-align: center;
+  }
+
+  .guide-content .container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: var(--spacing-xl);
+  }
+
+  .guide-nav {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    padding: var(--spacing-lg);
+    background: var(--color-card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+  }
+
+  .guide-nav h3 {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-accent);
+  }
+
+  .guide-nav ul {
+    list-style: none;
+  }
+
+  .guide-nav li {
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .guide-nav a {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .guide-nav a:hover {
+    color: var(--color-accent);
+  }
+
+  .guide-section {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .guide-section:last-child {
+    border-bottom: none;
+  }
+
+  .placeholder-text {
+    color: var(--color-text-subtle);
+    font-style: italic;
+    padding: var(--spacing-lg);
+    background: var(--color-card-bg);
+    border-radius: var(--radius-md);
+    border: 1px dashed var(--color-border);
+  }
+
+  @media (max-width: 768px) {
+    .guide-content .container {
+      grid-template-columns: 1fr;
+    }
+
+    .guide-nav {
+      position: static;
+    }
+  }
+</style>
+
+<script>
+  // Scroll animation observer
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    observer.observe(el);
+  });
+</script>

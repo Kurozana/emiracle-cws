@@ -1,0 +1,194 @@
+---
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { href, variant = 'primary', size = 'md' } = Astro.props;
+
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  href={href}
+  class:list={['btn', `btn--${variant}`, `btn--${size}`]}
+>
+  <span class="btn-content">
+    <slot />
+  </span>
+  <span class="btn-shine"></span>
+  <span class="btn-glow"></span>
+</Tag>
+
+<style>
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Shine effect */
+  .btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      transparent 40%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+    z-index: 1;
+    transition: left 0.5s ease;
+  }
+
+  .btn:hover .btn-shine {
+    left: 100%;
+  }
+
+  /* Glow effect */
+  .btn-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+
+  /* ========== PRIMARY ========== */
+  .btn--primary {
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+  }
+
+  .btn--primary .btn-glow {
+    background: var(--color-accent);
+    filter: blur(12px);
+  }
+
+  .btn--primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(13, 148, 136, 0.4);
+  }
+
+  .btn--primary:hover .btn-glow {
+    opacity: 0.5;
+  }
+
+  .btn--primary:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
+  }
+
+  /* ========== SECONDARY ========== */
+  .btn--secondary {
+    background: transparent;
+    border: 2px solid var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .btn--secondary .btn-shine {
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      transparent 40%,
+      var(--color-accent-glow) 50%,
+      transparent 60%,
+      transparent 100%
+    );
+  }
+
+  .btn--secondary:hover {
+    background: var(--color-accent-glow);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px var(--color-accent-glow);
+  }
+
+  .btn--secondary:active {
+    transform: translateY(-1px);
+  }
+
+  /* ========== GHOST ========== */
+  .btn--ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+  }
+
+  .btn--ghost .btn-shine {
+    display: none;
+  }
+
+  .btn--ghost:hover {
+    background: var(--color-accent-glow);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .btn--ghost:active {
+    transform: translateY(0);
+  }
+
+  /* ========== SIZES ========== */
+  .btn--sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn--lg {
+    padding: 1rem 2rem;
+    font-size: 1.05rem;
+  }
+
+  /* ========== RIPPLE ON CLICK ========== */
+  @keyframes btn-ripple {
+    0% {
+      transform: scale(0);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .btn:active::after {
+    animation: btn-ripple 0.6s ease-out;
+  }
+</style>
