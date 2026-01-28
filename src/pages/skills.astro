@@ -55,7 +55,11 @@ function getSkillProps(skillId: string) {
         <div class="loadout-tabs" id="loadout-tabs">
           {Object.entries(loadouts).map(([key, loadout], index) => (
             <button
-              class:list={['loadout-tab', { 'loadout-tab--active': index === 0 }]}
+              class:list={[
+                'loadout-tab',
+                { 'loadout-tab--active': index === 0 },
+                { 'loadout-tab--limited-event': loadout.isLimitedEvent }
+              ]}
               data-loadout={key}
               title={loadout.description}
             >
@@ -159,6 +163,66 @@ function getSkillProps(skillId: string) {
     background: var(--color-accent-glow);
     border-color: var(--color-accent);
     color: var(--color-accent);
+  }
+
+  /* Limited Event loadout - Green animated gradient effect */
+  .loadout-tab--limited-event {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .loadout-tab--limited-event::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      #0a1a0a 0%,
+      #00ff41 12.5%,
+      #32cd32 25%,
+      #228b22 37.5%,
+      #00ff7f 50%,
+      #2e8b57 62.5%,
+      #00ff41 75%,
+      #228b22 87.5%,
+      #0a1a0a 100%
+    );
+    background-size: 200px 100%;
+    opacity: 0.25;
+    animation: bog-shaman-flow 4s linear infinite;
+    pointer-events: none;
+  }
+
+  .loadout-tab--limited-event:hover::before {
+    opacity: 0.4;
+  }
+
+  .loadout-tab--limited-event.loadout-tab--active::before {
+    opacity: 0.5;
+  }
+
+  @keyframes bog-shaman-flow {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 200px 0;
+    }
+  }
+
+  /* Additional styling for limited event when active */
+  .loadout-tab--limited-event.loadout-tab--active {
+    border-color: #00ff41;
+    color: #00ff41;
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+  }
+
+  .loadout-tab--limited-event:hover {
+    border-color: #00ff41;
+    color: #00ff41;
   }
 
   .loadout-description {

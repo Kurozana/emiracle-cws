@@ -2,19 +2,15 @@
   "version": "1.0.0",
   "loadouts": {
     "default": {
-      "name": "Standard CWS",
-      "description": "Default Cast When Stunned setup",
+      "name": "WIP CWS",
+      "description": "Work in progress Cast When Stunned setup",
       "activeSetups": ["main", "auras"]
     },
-    "mapping": {
-      "name": "Fast Mapping",
-      "description": "Speed-focused setup for map clearing",
-      "activeSetups": ["main", "auras"]
-    },
-    "bossing": {
-      "name": "Boss Killer",
-      "description": "Single target focused for tough bosses",
-      "activeSetups": ["main", "auras"]
+    "phercia-bog-shaman": {
+      "name": "Phercia: Bog Shaman",
+      "description": "Limited event loadout for Bog Shaman class",
+      "activeSetups": ["setup1", "setup2", "setup3", "setup4"],
+      "isLimitedEvent": true
     }
   },
   "skillSetups": {
@@ -47,6 +43,65 @@
           { "skillId": "petrified-blood" }
         ]
       ]
+    },
+    "setup1": {
+      "title": "Setup 1 - Righteous Fire",
+      "description": "Primary damage setup",
+      "isLinked": true,
+      "rows": [
+        [
+          { "skillId": "righteous-fire" },
+          { "skillId": "elemental-focus-support" },
+          { "skillId": "burning-damage" }
+        ],
+        [
+          { "skillId": "efficacy-support" },
+          { "skillId": "aoe-support" }
+        ]
+      ]
+    },
+    "setup2": {
+      "title": "Setup 2 - Fire Trap",
+      "description": "Secondary damage setup",
+      "isLinked": true,
+      "rows": [
+        [
+          { "skillId": "fire-trap" },
+          { "skillId": "trap-mine-damage-support" }
+        ],
+        [
+          { "skillId": "controlled-destruction-support" },
+          { "skillId": "burning-damage" }
+        ]
+      ]
+    },
+    "setup3": {
+      "title": "Setup 3 - Movement",
+      "description": "Mobility setup",
+      "isLinked": true,
+      "rows": [
+        [
+          { "skillId": "shield-charge" },
+          { "skillId": "faster-attacks-support" }
+        ]
+      ]
+    },
+    "setup4": {
+      "title": "Setup 4 - Utility & Auras",
+      "description": "Utility skills and auras",
+      "isLinked": false,
+      "rows": [
+        [
+          { "skillId": "frostblink" },
+          { "skillId": "scorching-ray" },
+          { "skillId": "flammability" }
+        ],
+        [
+          { "skillId": "purity-of-elements" },
+          { "skillId": "purity-of-fire" },
+          { "skillId": "vitality" }
+        ]
+      ]
     }
   },
   "skills": {
@@ -75,7 +130,7 @@
       "tags": [],
       "level": 20
     },
-    "detonate-dead-scavenging": {
+    "detonate-dead": {
       "baseName": "Detonate Dead",
       "color": "green",
       "isSupport": false,
@@ -132,6 +187,111 @@
       "isSupport": true,
       "icon": "/gems/swift-affliction.png",
       "tags": [],
+      "level": 20
+    },
+    "righteous-fire": {
+      "baseName": "Righteous Fire",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Righteous_Fire_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "elemental-focus-support": {
+      "baseName": "Elemental Focus Support",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Elemental_Focus_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "efficacy-support": {
+      "baseName": "Efficacy Support",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Efficacy_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "fire-trap": {
+      "baseName": "Fire Trap",
+      "color": "green",
+      "isSupport": false,
+      "icon": "/gems/Fire_Trap_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "trap-mine-damage-support": {
+      "baseName": "Trap and Mine Damage Support",
+      "color": "green",
+      "isSupport": true,
+      "icon": "/gems/Trap_and_Mine_Damage_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "controlled-destruction-support": {
+      "baseName": "Controlled Destruction Support",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Controlled_Destruction_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "shield-charge": {
+      "baseName": "Shield Charge",
+      "color": "red",
+      "isSupport": false,
+      "icon": "/gems/Shield_Charge_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "faster-attacks-support": {
+      "baseName": "Faster Attacks Support",
+      "color": "green",
+      "isSupport": true,
+      "icon": "/gems/Faster_Attacks_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "frostblink": {
+      "baseName": "Frostblink",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Frostblink_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "scorching-ray": {
+      "baseName": "Scorching Ray",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Scorching_Ray_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "flammability": {
+      "baseName": "Flammability",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Flammability_skill_icon.png",
+      "tags": ["main"],
+      "level": 20,
+      "isCurse": true
+    },
+    "purity-of-elements": {
+      "baseName": "Purity of Elements",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Purity_of_Elements_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "vitality": {
+      "baseName": "Vitality",
+      "color": "red",
+      "isSupport": false,
+      "icon": "/gems/Vitality_skill_icon.png",
+      "tags": ["main"],
       "level": 20
     }
   }
