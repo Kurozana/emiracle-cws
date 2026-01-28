@@ -1,9 +1,26 @@
 {
   "version": "1.0.0",
+  "loadouts": {
+    "default": {
+      "name": "Standard CWS",
+      "description": "Default Cast When Stunned setup",
+      "activeSetups": ["main", "auras"]
+    },
+    "mapping": {
+      "name": "Fast Mapping",
+      "description": "Speed-focused setup for map clearing",
+      "activeSetups": ["main", "auras"]
+    },
+    "bossing": {
+      "name": "Boss Killer",
+      "description": "Single target focused for tough bosses",
+      "activeSetups": ["main", "auras"]
+    }
+  },
   "skillSetups": {
     "main": {
-      "title": "Main Skill Setup",
-      "description": "Your primary 6-link damage setup",
+      "title": "6-Link Setup",
+      "description": "Your primary damage setup",
       "isLinked": true,
       "rows": [
         [
@@ -38,28 +55,25 @@
       "color": "blue",
       "isSupport": true,
       "icon": "/gems/CWS.png",
-      "tags": []
+      "tags": [],
+      "level": 1,
+      "levelWarning": true
     },
     "concentrated-effect": {
       "baseName": "Concentrated Effect",
       "color": "blue",
       "isSupport": true,
       "icon": "/gems/Concentrated_Effect_Support_inventory_icon.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     },
     "burning-damage": {
       "baseName": "Burning Damage",
       "color": "red",
       "isSupport": true,
       "icon": "/gems/Burning_Damage_Support_inventory_icon.png",
-      "tags": []
-    },
-    "detonate-dead": {
-      "baseName": "Detonate Dead",
-      "color": "green",
-      "isSupport": false,
-      "icon": "/gems/Detonate_Dead.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     },
     "detonate-dead-scavenging": {
       "baseName": "Detonate Dead",
@@ -68,49 +82,56 @@
       "icon": "/gems/Detonate_Dead.png",
       "tags": [
         { "prefix": "OF", "name": "SCAVENGING" }
-      ]
+      ],
+      "level": 20
     },
     "aoe-support": {
       "baseName": "Increased Area of Effect",
       "color": "blue",
       "isSupport": true,
       "icon": "/gems/Aoe_Support.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     },
     "flesh-and-stone": {
       "baseName": "Flesh and Stone",
       "color": "red",
       "isSupport": false,
       "icon": "/gems/Flesh_and_Stone_skill_icon.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     },
     "malevolence": {
       "baseName": "Malevolence",
       "color": "green",
       "isSupport": false,
       "icon": "/gems/Malevolence_skill_icon.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     },
     "petrified-blood": {
       "baseName": "Petrified Blood",
       "color": "red",
       "isSupport": false,
       "icon": "/gems/Petrified_Blood_skill_icon.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     },
     "purity-of-fire": {
       "baseName": "Purity of Fire",
       "color": "red",
       "isSupport": false,
       "icon": "/gems/Purity_of_Fire_skill_icon.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     },
     "swift-affliction": {
       "baseName": "Swift Affliction",
       "color": "green",
       "isSupport": true,
       "icon": "/gems/swift-affliction.png",
-      "tags": []
+      "tags": [],
+      "level": 20
     }
   }
 }

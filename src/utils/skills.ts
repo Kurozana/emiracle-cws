@@ -14,6 +14,8 @@ export interface Skill {
   isSupport: boolean;
   icon?: string;
   tags: SkillTag[];
+  level?: number;
+  levelWarning?: boolean;
 }
 
 export interface SkillSetup {
@@ -23,8 +25,15 @@ export interface SkillSetup {
   rows: { skillId: string }[][];
 }
 
+export interface Loadout {
+  name: string;
+  description: string;
+  activeSetups: string[];
+}
+
 export interface SkillsData {
   version: string;
+  loadouts: Record<string, Loadout>;
   skillSetups: Record<string, SkillSetup>;
   skills: Record<string, Skill>;
 }

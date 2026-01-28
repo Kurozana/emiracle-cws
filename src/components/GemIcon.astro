@@ -22,6 +22,8 @@ interface Props {
   color?: 'red' | 'green' | 'blue' | 'white';
   size?: 'sm' | 'md' | 'lg';
   isSupport?: boolean;
+  level?: number;
+  levelWarning?: boolean;
 }
 
 const {
@@ -30,7 +32,9 @@ const {
   icon,
   color = 'red',
   size = 'md',
-  isSupport = false
+  isSupport = false,
+  level,
+  levelWarning = false
 } = Astro.props;
 
 const colorMap = {
@@ -59,6 +63,12 @@ const sizeMap = {
         <span class="gem-icon__letter">{baseName.charAt(0)}</span>
       </div>
     )}
+    {level !== undefined && (
+      <span class:list={['gem-icon__level', { 'gem-icon__level--warning': levelWarning }]}>
+        {levelWarning && <span class="gem-icon__level-warning">!</span>}
+        {level}
+      </span>
+    )}
   </div>
   <span class="gem-icon__name" style={`font-size: ${sizeMap[size].font}`}>
     <SkillName baseName={baseName} tags={tags} />
@@ -85,15 +95,16 @@ const sizeMap = {
       rgba(0, 0, 0, 0.3) 0%,
       rgba(0, 0, 0, 0.6) 100%
     );
-    /* Main skills: soft, subtle border */
-    border: 1px solid color-mix(in srgb, var(--gem-color) 40%, transparent);
-    box-shadow: none;
+    /* Main skills: moderately visible border */
+    border: 2px solid color-mix(in srgb, var(--gem-color) 65%, transparent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--gem-color) 25%, transparent);
     transition: all 0.25s ease;
   }
 
   .gem-icon:hover .gem-icon__image {
     transform: scale(1.05);
-    border-color: color-mix(in srgb, var(--gem-color) 60%, transparent);
+    border-color: color-mix(in srgb, var(--gem-color) 85%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--gem-color) 40%, transparent);
   }
 
   .gem-icon__image img {
@@ -120,6 +131,44 @@ const sizeMap = {
     font-weight: 700;
     color: var(--gem-color);
     text-shadow: 0 0 10px var(--gem-color);
+  }
+
+  .gem-icon__level {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: var(--color-bg, #1a1a2e);
+    border: 1px solid var(--color-border, #333);
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-text, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    z-index: 2;
+  }
+
+  .gem-icon__level--warning {
+    background: #8b0000;
+    border-color: #ff4444;
+    color: #fff;
+    animation: level-pulse 2s ease-in-out infinite;
+  }
+
+  .gem-icon__level-warning {
+    color: #ffcc00;
+    font-weight: 900;
+    font-size: 0.7rem;
+  }
+
+  @keyframes level-pulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(255, 68, 68, 0.5); }
+    50% { box-shadow: 0 0 8px rgba(255, 68, 68, 0.8); }
   }
 
   .gem-icon__name {
