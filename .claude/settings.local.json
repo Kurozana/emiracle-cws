@@ -6,7 +6,16 @@
       "Bash(git config:*)",
       "Bash(git push)",
       "Bash(git push https://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@github.com/Kurozana/emiracle-cws.git main)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(npm run build:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git checkout:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(ls:*)",
+      "Bash(head:*)"
     ]
   }
 }

@@ -1,37 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
-import GemIcon from '../components/GemIcon.astro';
 import skillsData from '../data/skills.json';
-import { type SkillsData, type SkillTag, getStructuredTags, hasTag } from '../utils/skills';
 
 // Ensure base URL ends with a slash
 const baseRaw = import.meta.env.BASE_URL;
 const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
-const data = skillsData as SkillsData;
-const { loadouts, skillSetups, skills } = data;
-
-// Helper to get skill props - passes structured data, no string building
-function getSkillProps(skillId: string) {
-  const skill = skills[skillId];
-  if (!skill) return null;
-  // Prepend base URL to icon path
-  const iconPath = skill.icon ? `${base}${skill.icon.replace(/^\//, '')}` : undefined;
-  // Get only structured tags for animated text effects
-  const structuredTags = getStructuredTags(skill.tags);
-  // Check if skill has "main" tag for border styling
-  const isMain = hasTag(skill, 'main');
-  return {
-    baseName: skill.baseName,
-    tags: structuredTags,
-    color: skill.color,
-    isSupport: skill.isSupport,
-    icon: iconPath,
-    level: skill.level,
-    levelWarning: skill.levelWarning,
-    isMain
-  };
-}
+const { loadouts, skills } = skillsData;
 ---
 
 <BaseLayout title="Skill Gems">
@@ -51,67 +26,83 @@ function getSkillProps(skillId: string) {
 
       <!-- Loadout Selector -->
       <div class="loadout-selector">
-        <h3 class="loadout-title">Loadout</h3>
+        <div class="loadout-header">
+          <h3 class="loadout-title">Loadout</h3>
+        </div>
+
         <div class="loadout-tabs" id="loadout-tabs">
           {Object.entries(loadouts).map(([key, loadout], index) => (
             <button
               class:list={[
                 'loadout-tab',
                 { 'loadout-tab--active': index === 0 },
-                { 'loadout-tab--limited-event': loadout.isLimitedEvent }
+                { 'loadout-tab--limited-event': 'isLimitedEvent' in loadout && loadout.isLimitedEvent }
               ]}
               data-loadout={key}
+              data-text={loadout.name}
               title={loadout.description}
             >
-              {loadout.name}
+              <span class="tab-text">{loadout.name}</span>
+              <span class="tab-hover-text"></span>
             </button>
           ))}
         </div>
+
         <p class="loadout-description" id="loadout-description">
           {Object.values(loadouts)[0]?.description}
         </p>
+
+        <!-- Progression Dropdown (below tabs) -->
+        <div class="progression-selector">
+          <div class="progression-left">
+            <label for="progression-dropdown" class="progression-label">Progression:</label>
+            <select id="progression-dropdown" class="progression-dropdown">
+              <!-- Populated by JavaScript based on selected loadout -->
+            </select>
+          </div>
+
+          <!-- PoB Link (per progression) - always visible, aligned right -->
+          <div class="pob-link-container" id="pob-link-container">
+            <span class="pob-label">PoB:</span>
+            <a href="#" id="pob-link" class="pob-link" target="_blank" rel="noopener noreferrer">
+              123
+            </a>
+          </div>
+        </div>
       </div>
 
-      {Object.entries(skillSetups).map(([key, setup]) => {
-        const isLinked = setup.isLinked;
-        return (
-          <div class="skill-section" data-setup-id={key}>
-            <h2>{setup.title}</h2>
-            <p class="section-desc">{setup.description}</p>
+      <!-- Bog Shaman Video Showcase (only visible for Bog Shaman loadout) -->
+      <div class="video-showcase" id="bog-shaman-video" style="display: none;">
+        <h3 class="video-title">Build Showcase</h3>
+        <div class="video-wrapper">
+          <iframe
+            src="https://www.youtube.com/embed/HWYA8hfdsaM"
+            title="Bog Shaman Build Showcase"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
 
-            <div class:list={['gem-setup', { 'gem-setup--6link': isLinked }]}>
-              {setup.rows.map((row, rowIndex) => (
-                <div class="gem-row">
-                  {row.map((item, itemIndex) => {
-                    const skillProps = getSkillProps(item.skillId);
-                    if (!skillProps) return null;
+      <!-- Passive Skill Tree Box -->
+      <div class="passive-tree-box" id="passive-tree-box">
+        <h3 class="passive-tree-title">Passive Skill Tree</h3>
+        <div class="passive-tree-actions">
+          <a href="#" id="open-planner-btn" class="btn-planner" target="_blank" rel="noopener noreferrer">
+            Open in Planner
+          </a>
+          <button type="button" id="copy-tree-btn" class="btn-copy-tree">
+            Copy Data
+          </button>
+        </div>
+        <p class="passive-tree-note" id="passive-tree-note"></p>
+      </div>
 
-                    return (
-                      <>
-                        {isLinked && itemIndex > 0 && (
-                          <span class="link-indicator">───</span>
-                        )}
-                        <GemIcon
-                          baseName={skillProps.baseName}
-                          tags={skillProps.tags}
-                          color={skillProps.color}
-                          size="md"
-                          isSupport={skillProps.isSupport}
-                          icon={skillProps.icon}
-                          level={skillProps.level}
-                          levelWarning={skillProps.levelWarning}
-                          isMain={skillProps.isMain}
-                        />
-                      </>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-
-          </div>
-        );
-      })}
+      <!-- Dynamic Skill Setups Container -->
+      <div id="skill-setups-container">
+        <!-- Skill setups will be dynamically rendered here -->
+      </div>
 
     </div>
   </section>
@@ -127,12 +118,89 @@ function getSkillProps(skillId: string) {
     transition: all 0.25s ease;
   }
 
+  .loadout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+
   .loadout-title {
     font-size: 1rem;
     color: var(--color-text-muted);
-    margin-bottom: var(--spacing-sm);
+    margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+
+  .progression-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .progression-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+
+  .progression-label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  /* PoB Link - always visible, aligned right */
+  .pob-link-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.85rem;
+  }
+
+  .pob-label {
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .pob-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .pob-link:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+
+  .progression-dropdown {
+    padding: 0.4rem 0.8rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+  }
+
+  .progression-dropdown:hover {
+    border-color: var(--color-accent);
+  }
+
+  .progression-dropdown:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-glow);
   }
 
   .loadout-tabs {
@@ -154,7 +222,8 @@ function getSkillProps(skillId: string) {
     transition: all 0.2s ease;
   }
 
-  .loadout-tab:hover {
+  /* Default tab hover - NOT applied to limited event tabs */
+  .loadout-tab:not(.loadout-tab--limited-event):hover {
     border-color: var(--color-accent);
     color: var(--color-text);
   }
@@ -165,90 +234,214 @@ function getSkillProps(skillId: string) {
     color: var(--color-accent);
   }
 
-  /* Limited Event loadout - Modern clean green animation */
+  /* Tab text elements - hidden by default */
+  .loadout-tab .tab-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .loadout-tab .tab-hover-text {
+    display: none;
+  }
+
+  /* ===========================================
+     Limited Event Tab - Green Reveal Hover Effect
+     ONLY applied to .loadout-tab--limited-event
+     =========================================== */
   .loadout-tab--limited-event {
+    --reveal-color: #4ade80;
+    --reveal-glow: rgba(74, 222, 128, 0.6);
+    --reveal-border: 3px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.1), rgba(46, 125, 50, 0.15));
-    border-color: rgba(34, 139, 34, 0.5);
-    transition: all 0.3s ease;
+    background: var(--color-bg);
+    border-color: rgba(74, 222, 128, 0.3);
+    color: var(--color-text-muted);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
-  .loadout-tab--limited-event::before {
-    content: '';
+  /* The reveal overlay element */
+  .loadout-tab--limited-event .tab-hover-text {
+    display: flex;
+    align-items: center;
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-      115deg,
-      transparent 40%,
-      rgba(46, 125, 50, 0.2) 50%,
-      transparent 60%
-    );
-    animation: clean-slide 4s linear infinite;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    padding-left: 0.6rem;
+    overflow: hidden;
+    white-space: nowrap;
+    /* CRITICAL: Background must match button to create reveal effect */
+    background: var(--color-bg);
+    color: var(--reveal-color);
+    font-weight: 600;
+    border-right: var(--reveal-border) solid var(--reveal-color);
+    transition: width 0.4s ease;
+    z-index: 2;
   }
 
-  @keyframes clean-slide {
-    0% {
-      transform: translate(-50%, -50%) rotate(0deg);
-    }
-    100% {
-      transform: translate(-50%, -50%) rotate(360deg);
-    }
-  }
-
-  .loadout-tab--limited-event::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(34, 139, 34, 0.15) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: smooth-shine 3s ease-in-out infinite;
-  }
-
-  @keyframes smooth-shine {
-    0%, 100% {
-      background-position: -200% 0;
-    }
-    50% {
-      background-position: 200% 0;
-    }
-  }
-
+  /* Hover state - expand the reveal */
   .loadout-tab--limited-event:hover {
-    border-color: rgba(34, 139, 34, 0.75);
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.15), rgba(46, 125, 50, 0.2));
-    box-shadow: 0 0 14px rgba(34, 139, 34, 0.25);
+    border-color: rgba(74, 222, 128, 0.6);
+    box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
   }
 
+  /* CRITICAL: Hide original text on hover to prevent duplication */
+  .loadout-tab--limited-event:hover .tab-text {
+    opacity: 0;
+  }
+
+  .loadout-tab--limited-event:hover .tab-hover-text {
+    width: 100%;
+    filter: drop-shadow(0 0 8px var(--reveal-glow));
+  }
+
+  /* Active state - identical to default state, hover effect still works */
   .loadout-tab--limited-event.loadout-tab--active {
-    border-color: #2e7d32;
-    background: linear-gradient(135deg, rgba(34, 139, 34, 0.18), rgba(46, 125, 50, 0.25));
-    color: #66bb6a;
-    box-shadow: 0 0 18px rgba(34, 139, 34, 0.3), inset 0 0 25px rgba(46, 125, 50, 0.15);
+    background: var(--color-bg);
+    border-color: rgba(74, 222, 128, 0.3);
+    color: var(--color-text-muted);
+    box-shadow: none;
   }
-
-  .loadout-tab--limited-event.loadout-tab--active::before {
-    animation: clean-slide 3s linear infinite;
-  }
-
-  .loadout-tab--limited-event.loadout-tab--active::after {
-    animation: smooth-shine 2.5s ease-in-out infinite;
-  }
+  /* END Limited Event Tab Styles */
 
   .loadout-description {
     color: var(--color-text-muted);
     font-size: 0.85rem;
     font-style: italic;
     margin: 0;
+  }
+
+  /* Bog Shaman Video Showcase */
+  .video-showcase {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all 0.25s ease;
+  }
+
+  .video-showcase:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  .video-title {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: #000;
+  }
+
+  .video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  /* Passive Skill Tree Box */
+  .passive-tree-box {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all 0.25s ease;
+  }
+
+  .passive-tree-box:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-md);
+  }
+
+  .passive-tree-title {
+    font-size: 1.1rem;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .passive-tree-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+
+  .btn-planner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.4rem;
+    background: linear-gradient(135deg, #0d9488, #14b8a6);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
+  }
+
+  .btn-planner:hover {
+    background: linear-gradient(135deg, #0f766e, #0d9488);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.45);
+  }
+
+  .btn-planner:active {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 3px 12px rgba(13, 148, 136, 0.35);
+  }
+
+  .btn-copy-tree {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.4rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-weight: 500;
+    font-size: 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-copy-tree:hover {
+    border-color: var(--color-accent);
+    background: var(--color-bg-secondary);
+  }
+
+  .btn-copy-tree:active {
+    transform: scale(0.98);
+  }
+
+  .btn-copy-tree.copied {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: #22c55e;
+    color: #22c55e;
+  }
+
+  .passive-tree-note {
+    margin-top: var(--spacing-sm);
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-style: italic;
   }
 
   .page-header {
@@ -266,7 +459,8 @@ function getSkillProps(skillId: string) {
     padding-bottom: var(--spacing-xl);
   }
 
-  .skill-section {
+  /* Skill section styles for dynamically generated content */
+  :global(.skill-section) {
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
     background: var(--color-card-bg);
@@ -275,36 +469,36 @@ function getSkillProps(skillId: string) {
     transition: all 0.25s ease;
   }
 
-  .skill-section:hover {
+  :global(.skill-section:hover) {
     border-color: var(--color-border-hover);
     box-shadow: var(--shadow-md);
   }
 
-  .skill-section h2 {
+  :global(.skill-section h2) {
     margin-bottom: var(--spacing-xs);
     font-size: 1.25rem;
   }
 
-  .section-desc {
+  :global(.section-desc) {
     color: var(--color-text-muted);
     font-size: 0.9rem;
     margin-bottom: var(--spacing-lg);
   }
 
-  .gem-setup {
+  :global(.gem-setup) {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
   }
 
-  .gem-setup--6link {
+  :global(.gem-setup--6link) {
     background: var(--color-bg-secondary);
     padding: var(--spacing-lg);
     border-radius: var(--radius-md);
     border: 1px dashed var(--color-border);
   }
 
-  .gem-row {
+  :global(.gem-row) {
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -313,59 +507,478 @@ function getSkillProps(skillId: string) {
   }
 
   /* Aura-specific layout - consistent icon sizing */
-  .gem-setup:not(.gem-setup--6link) .gem-row {
+  :global(.gem-setup:not(.gem-setup--6link) .gem-row) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 100px));
     justify-content: center;
     gap: var(--spacing-lg);
   }
 
-  .link-indicator {
+  :global(.link-indicator) {
     color: var(--color-text-subtle);
     font-size: 0.9rem;
     font-weight: 400;
     letter-spacing: -2px;
     opacity: 0.6;
     user-select: none;
+    /* Align link indicator with center of gem icon */
+    margin-top: 24px;
+  }
+
+  /* Gem icon styles for dynamically generated content */
+  :global(.gem-icon) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  :global(.gem-icon-wrapper) {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    transition: all 0.2s ease;
+  }
+
+  :global(.gem-icon-wrapper--main) {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent-glow);
+  }
+
+  :global(.gem-icon-wrapper img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  :global(.gem-level) {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 3px;
+    line-height: 1;
+  }
+
+  :global(.gem-level--warning) {
+    background: var(--color-warning);
+    color: black;
+  }
+
+  :global(.gem-name) {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    max-width: 80px;
+    line-height: 1.2;
+  }
+
+  :global(.gem-name--support) {
+    color: var(--color-text-subtle);
   }
 
   @media (max-width: 600px) {
-    .gem-row {
+    .loadout-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    :global(.gem-row) {
       gap: var(--spacing-sm);
     }
 
-    .link-indicator {
+    :global(.link-indicator) {
       display: none;
     }
   }
+
+  /* ===========================================
+     EXPERIMENTAL: Gear Stat Image Hover Tooltip
+     This is a TEST feature - easy to remove
+     Delete this entire section to remove feature
+     =========================================== */
+  :global(.gear-hover-trigger) {
+    position: relative;
+    cursor: pointer;
+  }
+
+  :global(.gear-hover-tooltip) {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+
+  :global(.gear-hover-trigger:hover .gear-hover-tooltip) {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  :global(.gear-hover-tooltip img) {
+    max-width: 300px;
+    max-height: 400px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--color-border);
+  }
+
+  :global(.gear-hover-tooltip::after) {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--color-border);
+  }
+  /* END EXPERIMENTAL FEATURE */
 </style>
 
-<script define:vars={{ loadouts }}>
-  // Loadout System with localStorage persistence
-  const STORAGE_KEY = 'emiracle-cws-loadout';
+<script define:vars={{ loadouts, skills, base }}>
+  // Storage keys for persistence
+  const STORAGE_KEY_LOADOUT = 'emiracle-cws-loadout';
+  const STORAGE_KEY_PROGRESSIONS = 'emiracle-cws-progressions';
 
-  function updateSkillSections(loadoutKey) {
-    const activeSetups = loadouts[loadoutKey]?.activeSetups || [];
-    const sections = document.querySelectorAll('.skill-section');
+  let currentLoadout = 'default';
+  let currentProgression = null;
 
-    sections.forEach(section => {
-      const setupId = section.getAttribute('data-setup-id');
-      if (activeSetups.includes(setupId)) {
-        section.style.display = 'block';
-      } else {
-        section.style.display = 'none';
+  // Get saved progressions per loadout
+  function getSavedProgressions() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY_PROGRESSIONS) || '{}');
+    } catch {
+      return {};
+    }
+  }
+
+  // Save progression for current loadout
+  function saveProgression(loadoutKey, progressionKey) {
+    const saved = getSavedProgressions();
+    saved[loadoutKey] = progressionKey;
+    localStorage.setItem(STORAGE_KEY_PROGRESSIONS, JSON.stringify(saved));
+  }
+
+  // Get skill icon URL
+  function getSkillIconUrl(skillId) {
+    const skill = skills[skillId];
+    if (!skill || !skill.icon) return '';
+    return `${base}${skill.icon.replace(/^\//, '')}`;
+  }
+
+  // Check if skill has "main" tag
+  function hasMainTag(skillId) {
+    const skill = skills[skillId];
+    if (!skill || !skill.tags) return false;
+    return skill.tags.some(tag => tag === 'main' || (typeof tag === 'object' && tag.name));
+  }
+
+  // Render a single gem icon
+  function renderGemIcon(skillId) {
+    const skill = skills[skillId];
+    if (!skill) return '';
+
+    const iconUrl = getSkillIconUrl(skillId);
+    const isMain = hasMainTag(skillId);
+    const isSupport = skill.isSupport;
+    const level = skill.level || 20;
+    const levelWarning = skill.levelWarning;
+
+    return `
+      <div class="gem-icon">
+        <div class="gem-icon-wrapper${isMain ? ' gem-icon-wrapper--main' : ''}">
+          ${iconUrl ? `<img src="${iconUrl}" alt="${skill.baseName}" loading="lazy">` : ''}
+          <span class="gem-level${levelWarning ? ' gem-level--warning' : ''}">${level}</span>
+        </div>
+        <span class="gem-name${isSupport ? ' gem-name--support' : ''}">${skill.baseName}</span>
+      </div>
+    `;
+  }
+
+  // Render skill setups for the current loadout and progression
+  function renderSkillSetups(loadoutKey, progressionKey) {
+    const container = document.getElementById('skill-setups-container');
+    if (!container) return;
+
+    const loadout = loadouts[loadoutKey];
+    if (!loadout || !loadout.progressions) {
+      container.innerHTML = '<p class="text-muted">No skill setups available.</p>';
+      return;
+    }
+
+    const progression = loadout.progressions[progressionKey];
+    if (!progression || !progression.skillSetups) {
+      container.innerHTML = '<p class="text-muted">No skill setups for this progression.</p>';
+      return;
+    }
+
+    let html = '';
+
+    // Render each skill setup in the progression
+    Object.entries(progression.skillSetups).forEach(([setupId, setup]) => {
+      const isLinked = setup.isLinked;
+
+      html += `
+        <div class="skill-section" data-setup-id="${setupId}">
+          <h2>${setup.title}</h2>
+          <p class="section-desc">${setup.description}</p>
+          <div class="gem-setup${isLinked ? ' gem-setup--6link' : ''}">
+      `;
+
+      // Render each row
+      setup.rows.forEach(row => {
+        html += '<div class="gem-row">';
+
+        row.forEach((item, itemIndex) => {
+          // Add link indicator between gems in linked setups
+          if (isLinked && itemIndex > 0) {
+            html += '<span class="link-indicator">───</span>';
+          }
+          html += renderGemIcon(item.skillId);
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div></div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  // Populate progression dropdown for the selected loadout
+  function populateProgressionDropdown(loadoutKey) {
+    const dropdown = document.getElementById('progression-dropdown');
+    if (!dropdown) return;
+
+    const loadout = loadouts[loadoutKey];
+    if (!loadout || !loadout.progressions) {
+      dropdown.innerHTML = '<option value="">No progressions</option>';
+      return;
+    }
+
+    // Get saved progression for this loadout, or use default
+    const savedProgressions = getSavedProgressions();
+    const savedProgression = savedProgressions[loadoutKey] || loadout.defaultProgression;
+
+    // Clear and populate dropdown
+    dropdown.innerHTML = '';
+
+    Object.entries(loadout.progressions).forEach(([key, progression]) => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = progression.name;
+
+      if (key === savedProgression) {
+        option.selected = true;
+        currentProgression = key;
       }
+
+      dropdown.appendChild(option);
+    });
+
+    // If no saved progression matched, select the first one
+    if (!currentProgression && dropdown.options.length > 0) {
+      currentProgression = dropdown.options[0].value;
+      dropdown.options[0].selected = true;
+    }
+  }
+
+  // Handle progression change
+  function handleProgressionChange() {
+    const dropdown = document.getElementById('progression-dropdown');
+    if (!dropdown) return;
+
+    currentProgression = dropdown.value;
+    saveProgression(currentLoadout, currentProgression);
+    renderSkillSetups(currentLoadout, currentProgression);
+    updatePassiveTreeBox(currentLoadout, currentProgression);
+    updatePobLink(currentLoadout, currentProgression);
+  }
+
+  // Show/hide Bog Shaman video based on selected loadout
+  function updateBogShamanVideo(loadoutKey) {
+    const videoSection = document.getElementById('bog-shaman-video');
+    if (!videoSection) return;
+
+    // Show video only for Bog Shaman loadout
+    if (loadoutKey === 'phercia-bog-shaman') {
+      videoSection.style.display = 'block';
+    } else {
+      videoSection.style.display = 'none';
+    }
+  }
+
+  // Show/hide Bog Shaman page background
+  function updateBogShamanBackground(loadoutKey) {
+    const bgId = 'bog-shaman-page-bg';
+    let bgOverlay = document.getElementById(bgId);
+
+    if (loadoutKey === 'phercia-bog-shaman') {
+      // Create overlay if it doesn't exist
+      if (!bgOverlay) {
+        bgOverlay = document.createElement('div');
+        bgOverlay.id = bgId;
+        bgOverlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-image: url('${base}SRC_IMG/shaman.png');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          opacity: 0.08;
+          pointer-events: none;
+          z-index: -1;
+          transition: opacity 0.4s ease;
+        `;
+        document.body.appendChild(bgOverlay);
+      }
+      // Show overlay
+      bgOverlay.style.display = 'block';
+      // Trigger reflow for transition
+      bgOverlay.offsetHeight;
+      bgOverlay.style.opacity = '0.08';
+    } else {
+      // Hide overlay if it exists
+      if (bgOverlay) {
+        bgOverlay.style.opacity = '0';
+        setTimeout(() => {
+          if (bgOverlay) bgOverlay.style.display = 'none';
+        }, 400);
+      }
+    }
+  }
+
+  // Update PoB link based on current loadout and progression
+  // Always visible, updates value per progression
+  function updatePobLink(loadoutKey, progressionKey) {
+    const link = document.getElementById('pob-link');
+
+    if (!link) return;
+
+    const loadout = loadouts[loadoutKey];
+    const progression = loadout?.progressions?.[progressionKey];
+    const pobLink = progression?.pobLink;
+
+    // Use pobLink if available, otherwise show placeholder
+    if (pobLink && pobLink.trim() !== '') {
+      link.href = pobLink;
+      link.textContent = 'View';
+    } else {
+      link.href = '#';
+      link.textContent = '123';
+    }
+  }
+
+  // Update passive tree box based on current loadout and progression
+  function updatePassiveTreeBox(loadoutKey, progressionKey) {
+    const plannerBtn = document.getElementById('open-planner-btn');
+    const copyBtn = document.getElementById('copy-tree-btn');
+    const note = document.getElementById('passive-tree-note');
+
+    if (!plannerBtn || !copyBtn) return;
+
+    const loadout = loadouts[loadoutKey];
+    const progression = loadout?.progressions?.[progressionKey];
+    const treeData = progression?.passiveTree;
+
+    if (treeData && treeData.plannerUrl) {
+      plannerBtn.href = treeData.plannerUrl;
+      plannerBtn.style.pointerEvents = 'auto';
+      plannerBtn.style.opacity = '1';
+    } else {
+      plannerBtn.href = '#';
+      plannerBtn.style.pointerEvents = 'none';
+      plannerBtn.style.opacity = '0.5';
+    }
+
+    // Update note
+    if (note) {
+      if (!treeData?.treeData) {
+        note.textContent = 'Tree data not yet available for this progression.';
+      } else {
+        note.textContent = '';
+      }
+    }
+
+    // Store tree data on button for copy functionality
+    copyBtn.dataset.treeData = treeData?.treeData || '';
+  }
+
+  // Handle copy tree data
+  function handleCopyTreeData() {
+    const copyBtn = document.getElementById('copy-tree-btn');
+    if (!copyBtn) return;
+
+    const treeData = copyBtn.dataset.treeData;
+
+    if (!treeData) {
+      // Show temporary "No data" message
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = 'No Data';
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+      }, 1500);
+      return;
+    }
+
+    navigator.clipboard.writeText(treeData).then(() => {
+      // Show success state
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = 'Copied!';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+        copyBtn.classList.remove('copied');
+      }, 1500);
+    }).catch(() => {
+      // Fallback for older browsers
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = 'Failed';
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+      }, 1500);
     });
   }
 
+  // Initialize the loadout system
   function initLoadoutSystem() {
     const tabs = document.querySelectorAll('.loadout-tab');
     const description = document.getElementById('loadout-description');
+    const progressionDropdown = document.getElementById('progression-dropdown');
 
-    // Load saved loadout from localStorage
-    const savedLoadout = localStorage.getItem(STORAGE_KEY) || 'default';
+    // Set up hover text for limited event tabs
+    tabs.forEach(tab => {
+      if (tab.classList.contains('loadout-tab--limited-event')) {
+        const hoverText = tab.querySelector('.tab-hover-text');
+        const tabName = tab.getAttribute('data-text');
+        if (hoverText && tabName) {
+          hoverText.textContent = tabName;
+        }
+      }
+    });
 
-    // Set initial active state and show correct sections
+    // Load saved loadout
+    const savedLoadout = localStorage.getItem(STORAGE_KEY_LOADOUT) || 'default';
+    currentLoadout = savedLoadout;
+
+    // Set initial active tab and description
     tabs.forEach(tab => {
       const loadoutKey = tab.getAttribute('data-loadout');
       if (loadoutKey === savedLoadout) {
@@ -378,13 +991,38 @@ function getSkillProps(skillId: string) {
       }
     });
 
-    // Show/hide sections for initial loadout
-    updateSkillSections(savedLoadout);
+    // Populate progression dropdown for initial loadout
+    populateProgressionDropdown(savedLoadout);
 
-    // Add click handlers
+    // Render skill setups for initial loadout and progression
+    renderSkillSetups(currentLoadout, currentProgression);
+
+    // Update passive tree box
+    updatePassiveTreeBox(currentLoadout, currentProgression);
+
+    // Update PoB link
+    updatePobLink(currentLoadout, currentProgression);
+
+    // Show/hide Bog Shaman video and background based on loadout
+    updateBogShamanVideo(savedLoadout);
+    updateBogShamanBackground(savedLoadout);
+
+    // Add progression dropdown change handler
+    if (progressionDropdown) {
+      progressionDropdown.addEventListener('change', handleProgressionChange);
+    }
+
+    // Add copy tree button handler
+    const copyBtn = document.getElementById('copy-tree-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', handleCopyTreeData);
+    }
+
+    // Add loadout tab click handlers
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const loadoutKey = tab.getAttribute('data-loadout');
+        currentLoadout = loadoutKey;
 
         // Update active state
         tabs.forEach(t => t.classList.remove('loadout-tab--active'));
@@ -395,11 +1033,24 @@ function getSkillProps(skillId: string) {
           description.textContent = loadouts[loadoutKey].description;
         }
 
-        // Update visible skill sections
-        updateSkillSections(loadoutKey);
+        // Populate progression dropdown for this loadout
+        populateProgressionDropdown(loadoutKey);
 
-        // Save to localStorage
-        localStorage.setItem(STORAGE_KEY, loadoutKey);
+        // Render skill setups for this loadout and progression
+        renderSkillSetups(loadoutKey, currentProgression);
+
+        // Update passive tree box
+        updatePassiveTreeBox(loadoutKey, currentProgression);
+
+        // Update PoB link
+        updatePobLink(loadoutKey, currentProgression);
+
+        // Show/hide Bog Shaman video and background
+        updateBogShamanVideo(loadoutKey);
+        updateBogShamanBackground(loadoutKey);
+
+        // Save loadout
+        localStorage.setItem(STORAGE_KEY_LOADOUT, loadoutKey);
       });
     });
   }

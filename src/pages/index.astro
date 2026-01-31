@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Navigation from '../components/Navigation.astro';
 import Card from '../components/Card.astro';
 import Button from '../components/Button.astro';
+import SocialLinks from '../components/SocialLinks.astro';
 
 // Ensure base URL ends with a slash
 const baseRaw = import.meta.env.BASE_URL;
@@ -29,7 +30,7 @@ const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
             Leveling Guide
           </Button>
         </div>
-      </div>
+      </div>    
     </div>
   </section>
 
@@ -56,23 +57,22 @@ const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
         <Card title="FAQ" href={`${base}faq/`}>
           <p>Common questions answered and troubleshooting tips.</p>
         </Card>
-
-        <Card title="Videos" href="#" variant="highlight">
-          <p>Links to Emiracles' latest videos and stream highlights.</p>
-        </Card>
       </div>
     </div>
   </section>
 
   <section class="cta section">
     <div class="container text-center">
-      <h2>Ready to Get Stunned?</h2>
-      <p class="text-muted">
-        Join the community and master the Cast When Stunned build.
-      </p>
-      <Button href={`${base}guide/`} variant="primary" size="lg">
-        Start Your Journey
-      </Button>
+      <h2>Find Emiracles and join the community :)</h2>
+      <div class="social-container">
+        <SocialLinks
+          discord="https://discord.gg/n6A9992BaD"
+          youtube="https://www.youtube.com/@HolyFkingShit"
+          twitch="https://www.twitch.tv/emiracles"
+          size="lg"
+          showLabels={true}
+        />
+      </div>
     </div>
   </section>
 </BaseLayout>
@@ -124,10 +124,17 @@ const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
   }
 
   .cta h2 {
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
   }
 
-  .cta p {
-    margin-bottom: var(--spacing-lg);
+  .social-container {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--spacing-lg);
+  }
+
+  .social-container :global(.social-links) {
+    justify-content: center;
+    flex-wrap: wrap;
   }
 </style>
