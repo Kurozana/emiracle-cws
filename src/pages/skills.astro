@@ -546,8 +546,16 @@ const { loadouts, skills } = skillsData;
   }
 
   :global(.gem-icon-wrapper--main) {
-    border-color: var(--color-accent);
-    box-shadow: 0 0 8px var(--color-accent-glow);
+    border: 3px solid var(--gem-color);
+    box-shadow:
+      0 0 12px color-mix(in srgb, var(--gem-color) 50%, transparent),
+      inset 0 0 8px color-mix(in srgb, var(--gem-color) 20%, transparent);
+  }
+
+  :global(.gem-icon-wrapper--main:hover) {
+    box-shadow:
+      0 0 18px color-mix(in srgb, var(--gem-color) 70%, transparent),
+      inset 0 0 12px color-mix(in srgb, var(--gem-color) 30%, transparent);
   }
 
   :global(.gem-icon-wrapper img) {
@@ -726,6 +734,14 @@ const { loadouts, skills } = skillsData;
     return skill.tags.filter(tag => typeof tag === 'object' && tag.prefix && tag.name);
   }
 
+  // Color map for gem border colors
+  const colorMap = {
+    red: '#c41e3a',    // Strength gems
+    green: '#1eff00',  // Dexterity gems
+    blue: '#4169e1',   // Intelligence gems
+    white: '#e0e0e0',  // Support gems
+  };
+
   // Render a single gem icon
   function renderGemIcon(skillId) {
     const skill = skills[skillId];
@@ -737,6 +753,7 @@ const { loadouts, skills } = skillsData;
     const level = skill.level || 20;
     const levelWarning = skill.levelWarning;
     const structuredTags = getStructuredTags(skillId);
+    const gemColor = colorMap[skill.color] || colorMap.blue;
 
     // Build tag HTML with animated effect
     const tagsHtml = structuredTags.map(tag =>
@@ -745,7 +762,7 @@ const { loadouts, skills } = skillsData;
 
     return `
       <div class="gem-icon">
-        <div class="gem-icon-wrapper${isMain ? ' gem-icon-wrapper--main' : ''}">
+        <div class="gem-icon-wrapper${isMain ? ' gem-icon-wrapper--main' : ''}" style="--gem-color: ${gemColor}">
           ${iconUrl ? `<img src="${iconUrl}" alt="${skill.baseName}" loading="lazy">` : ''}
           <span class="gem-level${levelWarning ? ' gem-level--warning' : ''}">${level}</span>
         </div>
