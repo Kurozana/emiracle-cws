@@ -12,6 +12,9 @@ const { loadouts, skills } = skillsData;
 <BaseLayout title="Skill Gems">
   <Navigation slot="header" />
 
+  <!-- Loadout-themed background overlay -->
+  <div id="loadout-background" class="loadout-background"></div>
+
   <section class="page-header">
     <div class="container">
       <h1>Skill Gems</h1>
@@ -89,6 +92,43 @@ const { loadouts, skills } = skillsData;
 </BaseLayout>
 
 <style>
+  /* Loadout-themed page background */
+  .loadout-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .loadout-background--active {
+    opacity: 0.08;
+  }
+
+  /* Blend with dark theme */
+  .loadout-background::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      var(--color-bg) 0%,
+      transparent 20%,
+      transparent 80%,
+      var(--color-bg) 100%
+    );
+  }
+
   .loadout-selector {
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
@@ -427,6 +467,21 @@ const { loadouts, skills } = skillsData;
       inset 0 0 12px color-mix(in srgb, var(--gem-color) 30%, transparent);
   }
 
+  /* Support gem styling - icon only, no border/background */
+  :global(.gem-icon-wrapper--support) {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  :global(.gem-icon-wrapper--support:hover) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
   :global(.gem-icon-wrapper img) {
     width: 100%;
     height: 100%;
@@ -462,12 +517,12 @@ const { loadouts, skills } = skillsData;
     color: var(--color-text-subtle);
   }
 
-  /* Animated TAG effect for structured tags (e.g., "OF SCAVENGING") */
-  :global(.gem-tag) {
-    display: block;
-    font-size: 0.65rem;
+  /* Transfigured Gem effect - renders INLINE with base skill name */
+  :global(.gem-transfigured) {
+    display: inline;
+    font-size: inherit;
     font-weight: 600;
-    margin-top: 2px;
+    margin-left: 0.25em;
     background: repeating-linear-gradient(
       90deg,
       #1a0a00 0%,
@@ -484,15 +539,15 @@ const { loadouts, skills } = skillsData;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: gem-tag-flow 3s linear infinite;
+    animation: gem-transfigured-flow 3s linear infinite;
   }
 
-  @keyframes gem-tag-flow {
+  @keyframes gem-transfigured-flow {
     0% { background-position: 0 0; }
     100% { background-position: 200px 0; }
   }
 
-  :global(.gem-icon:hover .gem-tag) {
+  :global(.gem-icon:hover .gem-transfigured) {
     filter: brightness(1.3);
   }
 
@@ -611,6 +666,31 @@ const { loadouts, skills } = skillsData;
     white: '#e0e0e0',  // Support gems
   };
 
+  // Update loadout-themed page background
+  function updateLoadoutBackground(loadoutKey) {
+    const bgElement = document.getElementById('loadout-background');
+    if (!bgElement) return;
+
+    const loadout = loadouts[loadoutKey];
+    const bgImage = loadout?.background;
+
+    if (bgImage) {
+      // Build full URL for background image
+      const bgUrl = `${base}${bgImage.replace(/^\//, '')}`;
+      bgElement.style.backgroundImage = `url('${bgUrl}')`;
+      bgElement.classList.add('loadout-background--active');
+    } else {
+      // Remove background for loadouts without themed background
+      bgElement.classList.remove('loadout-background--active');
+      // Clear image after fade out
+      setTimeout(() => {
+        if (!bgElement.classList.contains('loadout-background--active')) {
+          bgElement.style.backgroundImage = '';
+        }
+      }, 500);
+    }
+  }
+
   // Render a single gem icon
   function renderGemIcon(skillId) {
     const skill = skills[skillId];
@@ -624,22 +704,26 @@ const { loadouts, skills } = skillsData;
     const structuredTags = getStructuredTags(skillId);
     const gemColor = colorMap[skill.color] || colorMap.blue;
 
-    // Build tag HTML with animated effect
-    const tagsHtml = structuredTags.map(tag =>
-      `<span class="gem-tag">${tag.prefix} ${tag.name}</span>`
+    // Build transfigured gem HTML with animated effect (renders INLINE with base name)
+    const transfiguredHtml = structuredTags.map(tag =>
+      `<span class="gem-transfigured">${tag.prefix} ${tag.name}</span>`
     ).join('');
 
     // Level display: show !<level> if warning, otherwise just level
     const levelDisplay = levelWarning ? `!${level}` : level;
 
+    // Build wrapper classes
+    let wrapperClasses = 'gem-icon-wrapper';
+    if (isMain) wrapperClasses += ' gem-icon-wrapper--main';
+    if (isSupport) wrapperClasses += ' gem-icon-wrapper--support';
+
     return `
       <div class="gem-icon">
-        <div class="gem-icon-wrapper${isMain ? ' gem-icon-wrapper--main' : ''}" style="--gem-color: ${gemColor}">
+        <div class="${wrapperClasses}" style="--gem-color: ${gemColor}">
           ${iconUrl ? `<img src="${iconUrl}" alt="${skill.baseName}" loading="lazy">` : ''}
           <span class="gem-level${levelWarning ? ' gem-level--warning' : ''}">${levelDisplay}</span>
         </div>
-        <span class="gem-name${isSupport ? ' gem-name--support' : ''}">${skill.baseName}</span>
-        ${tagsHtml}
+        <span class="gem-name${isSupport ? ' gem-name--support' : ''}">${skill.baseName}${transfiguredHtml}</span>
       </div>
     `;
   }
@@ -872,6 +956,9 @@ const { loadouts, skills } = skillsData;
     // Update PoB link
     updatePobLink(currentLoadout, currentProgression);
 
+    // Update loadout-themed background
+    updateLoadoutBackground(currentLoadout);
+
     // Add progression dropdown change handler
     if (progressionDropdown) {
       progressionDropdown.addEventListener('change', handleProgressionChange);
@@ -909,6 +996,9 @@ const { loadouts, skills } = skillsData;
 
         // Update PoB link
         updatePobLink(loadoutKey, currentProgression);
+
+        // Update loadout-themed background
+        updateLoadoutBackground(loadoutKey);
 
         // Save loadout
         localStorage.setItem(STORAGE_KEY_LOADOUT, loadoutKey);

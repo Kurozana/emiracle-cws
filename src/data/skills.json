@@ -3,7 +3,8 @@
   "loadouts": {
     "default": {
       "name": "Cast When Stunned",
-      "description": "Detonate Dead Cast When Stunned build",
+      "description": "Standard CWS Chieftain",
+      "background": "/SRC_IMG/chief.png",
       "defaultProgression": "campaign",
       "progressions": {
         "campaign": {
@@ -171,6 +172,7 @@
     "cws-gladiator": {
       "name": "CWS: Gladiator",
       "description": "Cast When Stunned Gladiator variant",
+      "background": "/SRC_IMG/glad.png",
       "defaultProgression": "campaign",
       "progressions": {
         "campaign": {

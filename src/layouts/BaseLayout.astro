@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import '../styles/animations/base.css';
+import SocialFloater from '../components/SocialFloater.astro';
 
 interface Props {
   title: string;
@@ -42,6 +43,9 @@ const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
     </script>
   </head>
   <body>
+    <!-- Global floating social links -->
+    <SocialFloater />
+
     <div class="page-wrapper">
       <slot name="header">
         <header class="site-header">
