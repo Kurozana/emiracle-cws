@@ -33,17 +33,11 @@ const { loadouts, skills } = skillsData;
         <div class="loadout-tabs" id="loadout-tabs">
           {Object.entries(loadouts).map(([key, loadout], index) => (
             <button
-              class:list={[
-                'loadout-tab',
-                { 'loadout-tab--active': index === 0 },
-                { 'loadout-tab--limited-event': 'isLimitedEvent' in loadout && loadout.isLimitedEvent }
-              ]}
+              class:list={['loadout-tab', { 'loadout-tab--active': index === 0 }]}
               data-loadout={key}
-              data-text={loadout.name}
               title={loadout.description}
             >
-              <span class="tab-text">{loadout.name}</span>
-              <span class="tab-hover-text"></span>
+              {loadout.name}
             </button>
           ))}
         </div>
@@ -68,20 +62,6 @@ const { loadouts, skills } = skillsData;
               123
             </a>
           </div>
-        </div>
-      </div>
-
-      <!-- Bog Shaman Video Showcase (only visible for Bog Shaman loadout) -->
-      <div class="video-showcase" id="bog-shaman-video" style="display: none;">
-        <h3 class="video-title">Build Showcase</h3>
-        <div class="video-wrapper">
-          <iframe
-            src="https://www.youtube.com/embed/HWYA8hfdsaM"
-            title="Bog Shaman Build Showcase"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-          ></iframe>
         </div>
       </div>
 
@@ -234,122 +214,11 @@ const { loadouts, skills } = skillsData;
     color: var(--color-accent);
   }
 
-  /* Tab text elements - hidden by default */
-  .loadout-tab .tab-text {
-    position: relative;
-    z-index: 1;
-  }
-
-  .loadout-tab .tab-hover-text {
-    display: none;
-  }
-
-  /* ===========================================
-     Limited Event Tab - Green Reveal Hover Effect
-     ONLY applied to .loadout-tab--limited-event
-     =========================================== */
-  .loadout-tab--limited-event {
-    --reveal-color: #4ade80;
-    --reveal-glow: rgba(74, 222, 128, 0.6);
-    --reveal-border: 3px;
-    position: relative;
-    overflow: hidden;
-    background: var(--color-bg);
-    border-color: rgba(74, 222, 128, 0.3);
-    color: var(--color-text-muted);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  /* The reveal overlay element */
-  .loadout-tab--limited-event .tab-hover-text {
-    display: flex;
-    align-items: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0%;
-    height: 100%;
-    padding-left: 0.6rem;
-    overflow: hidden;
-    white-space: nowrap;
-    /* CRITICAL: Background must match button to create reveal effect */
-    background: var(--color-bg);
-    color: var(--reveal-color);
-    font-weight: 600;
-    border-right: var(--reveal-border) solid var(--reveal-color);
-    transition: width 0.4s ease;
-    z-index: 2;
-  }
-
-  /* Hover state - expand the reveal */
-  .loadout-tab--limited-event:hover {
-    border-color: rgba(74, 222, 128, 0.6);
-    box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
-  }
-
-  /* CRITICAL: Hide original text on hover to prevent duplication */
-  .loadout-tab--limited-event:hover .tab-text {
-    opacity: 0;
-  }
-
-  .loadout-tab--limited-event:hover .tab-hover-text {
-    width: 100%;
-    filter: drop-shadow(0 0 8px var(--reveal-glow));
-  }
-
-  /* Active state - identical to default state, hover effect still works */
-  .loadout-tab--limited-event.loadout-tab--active {
-    background: var(--color-bg);
-    border-color: rgba(74, 222, 128, 0.3);
-    color: var(--color-text-muted);
-    box-shadow: none;
-  }
-  /* END Limited Event Tab Styles */
-
   .loadout-description {
     color: var(--color-text-muted);
     font-size: 0.85rem;
     font-style: italic;
     margin: 0;
-  }
-
-  /* Bog Shaman Video Showcase */
-  .video-showcase {
-    margin-bottom: var(--spacing-xl);
-    padding: var(--spacing-lg);
-    background: var(--color-card-bg);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    transition: all 0.25s ease;
-  }
-
-  .video-showcase:hover {
-    border-color: var(--color-border-hover);
-    box-shadow: var(--shadow-md);
-  }
-
-  .video-title {
-    font-size: 1.1rem;
-    color: var(--color-text);
-    margin-bottom: var(--spacing-md);
-  }
-
-  .video-wrapper {
-    position: relative;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
-    height: 0;
-    overflow: hidden;
-    border-radius: var(--radius-md);
-    background: #000;
-  }
-
-  .video-wrapper iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
   }
 
   /* Passive Skill Tree Box */
@@ -760,11 +629,14 @@ const { loadouts, skills } = skillsData;
       `<span class="gem-tag">${tag.prefix} ${tag.name}</span>`
     ).join('');
 
+    // Level display: show !<level> if warning, otherwise just level
+    const levelDisplay = levelWarning ? `!${level}` : level;
+
     return `
       <div class="gem-icon">
         <div class="gem-icon-wrapper${isMain ? ' gem-icon-wrapper--main' : ''}" style="--gem-color: ${gemColor}">
           ${iconUrl ? `<img src="${iconUrl}" alt="${skill.baseName}" loading="lazy">` : ''}
-          <span class="gem-level${levelWarning ? ' gem-level--warning' : ''}">${level}</span>
+          <span class="gem-level${levelWarning ? ' gem-level--warning' : ''}">${levelDisplay}</span>
         </div>
         <span class="gem-name${isSupport ? ' gem-name--support' : ''}">${skill.baseName}</span>
         ${tagsHtml}
@@ -873,63 +745,6 @@ const { loadouts, skills } = skillsData;
     updatePobLink(currentLoadout, currentProgression);
   }
 
-  // Show/hide Bog Shaman video based on selected loadout
-  function updateBogShamanVideo(loadoutKey) {
-    const videoSection = document.getElementById('bog-shaman-video');
-    if (!videoSection) return;
-
-    // Show video only for Bog Shaman loadout
-    if (loadoutKey === 'phercia-bog-shaman') {
-      videoSection.style.display = 'block';
-    } else {
-      videoSection.style.display = 'none';
-    }
-  }
-
-  // Show/hide Bog Shaman page background
-  function updateBogShamanBackground(loadoutKey) {
-    const bgId = 'bog-shaman-page-bg';
-    let bgOverlay = document.getElementById(bgId);
-
-    if (loadoutKey === 'phercia-bog-shaman') {
-      // Create overlay if it doesn't exist
-      if (!bgOverlay) {
-        bgOverlay = document.createElement('div');
-        bgOverlay.id = bgId;
-        bgOverlay.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-image: url('${base}SRC_IMG/shaman.png');
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          background-attachment: fixed;
-          opacity: 0.08;
-          pointer-events: none;
-          z-index: -1;
-          transition: opacity 0.4s ease;
-        `;
-        document.body.appendChild(bgOverlay);
-      }
-      // Show overlay
-      bgOverlay.style.display = 'block';
-      // Trigger reflow for transition
-      bgOverlay.offsetHeight;
-      bgOverlay.style.opacity = '0.08';
-    } else {
-      // Hide overlay if it exists
-      if (bgOverlay) {
-        bgOverlay.style.opacity = '0';
-        setTimeout(() => {
-          if (bgOverlay) bgOverlay.style.display = 'none';
-        }, 400);
-      }
-    }
-  }
-
   // Update PoB link based on current loadout and progression
   // Always visible, updates value per progression
   function updatePobLink(loadoutKey, progressionKey) {
@@ -1028,17 +843,6 @@ const { loadouts, skills } = skillsData;
     const description = document.getElementById('loadout-description');
     const progressionDropdown = document.getElementById('progression-dropdown');
 
-    // Set up hover text for limited event tabs
-    tabs.forEach(tab => {
-      if (tab.classList.contains('loadout-tab--limited-event')) {
-        const hoverText = tab.querySelector('.tab-hover-text');
-        const tabName = tab.getAttribute('data-text');
-        if (hoverText && tabName) {
-          hoverText.textContent = tabName;
-        }
-      }
-    });
-
     // Load saved loadout
     const savedLoadout = localStorage.getItem(STORAGE_KEY_LOADOUT) || 'default';
     currentLoadout = savedLoadout;
@@ -1067,10 +871,6 @@ const { loadouts, skills } = skillsData;
 
     // Update PoB link
     updatePobLink(currentLoadout, currentProgression);
-
-    // Show/hide Bog Shaman video and background based on loadout
-    updateBogShamanVideo(savedLoadout);
-    updateBogShamanBackground(savedLoadout);
 
     // Add progression dropdown change handler
     if (progressionDropdown) {
@@ -1109,10 +909,6 @@ const { loadouts, skills } = skillsData;
 
         // Update PoB link
         updatePobLink(loadoutKey, currentProgression);
-
-        // Show/hide Bog Shaman video and background
-        updateBogShamanVideo(loadoutKey);
-        updateBogShamanBackground(loadoutKey);
 
         // Save loadout
         localStorage.setItem(STORAGE_KEY_LOADOUT, loadoutKey);

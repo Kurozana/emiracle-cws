@@ -2,8 +2,8 @@
   "version": "2.0.0",
   "loadouts": {
     "default": {
-      "name": "WIP CWS",
-      "description": "Work in progress Cast When Stunned setup",
+      "name": "Cast When Stunned",
+      "description": "Detonate Dead Cast When Stunned build",
       "defaultProgression": "campaign",
       "progressions": {
         "campaign": {
@@ -45,73 +45,169 @@
               ]
             }
           }
-        }
-      }
-    },
-    "phercia-bog-shaman": {
-      "name": "Phercia: Bog Shaman",
-      "description": "Limited event loadout for Bog Shaman class",
-      "isLimitedEvent": true,
-      "defaultProgression": "endgame",
-      "progressions": {
-        "endgame": {
-          "name": "Endgame",
+        },
+        "maps": {
+          "name": "Maps",
           "passiveTree": {
             "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
             "treeData": ""
           },
           "pobLink": "",
           "skillSetups": {
-            "setup1": {
-              "title": "Setup 1 - Righteous Fire",
+            "main": {
+              "title": "6-Link Setup",
+              "description": "Map clearing damage setup",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "detonate-dead" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "concentrated-effect" }
+                ],
+                [
+                  { "skillId": "aoe-support" },
+                  { "skillId": "burning-damage" },
+                  { "skillId": "swift-affliction" }
+                ]
+              ]
+            },
+            "auras": {
+              "title": "Aura Setup",
+              "description": "Defensive and offensive auras",
+              "isLinked": false,
+              "rows": [
+                [
+                  { "skillId": "malevolence" },
+                  { "skillId": "purity-of-fire" },
+                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "petrified-blood" }
+                ]
+              ]
+            }
+          }
+        },
+        "no-bloodnotch": {
+          "name": "No Bloodnotch Swap",
+          "passiveTree": {
+            "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
+            "treeData": ""
+          },
+          "pobLink": "",
+          "skillSetups": {
+            "main": {
+              "title": "6-Link Setup",
+              "description": "Setup without Bloodnotch",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "detonate-dead" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "concentrated-effect" }
+                ],
+                [
+                  { "skillId": "aoe-support" },
+                  { "skillId": "burning-damage" },
+                  { "skillId": "swift-affliction" }
+                ]
+              ]
+            },
+            "auras": {
+              "title": "Aura Setup",
+              "description": "Defensive and offensive auras",
+              "isLinked": false,
+              "rows": [
+                [
+                  { "skillId": "malevolence" },
+                  { "skillId": "purity-of-fire" },
+                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "petrified-blood" }
+                ]
+              ]
+            }
+          }
+        },
+        "bloodnotch": {
+          "name": "Bloodnotch Swap",
+          "passiveTree": {
+            "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
+            "treeData": ""
+          },
+          "pobLink": "",
+          "skillSetups": {
+            "main": {
+              "title": "6-Link Setup",
+              "description": "Setup with Bloodnotch equipped",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "detonate-dead" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "concentrated-effect" }
+                ],
+                [
+                  { "skillId": "aoe-support" },
+                  { "skillId": "burning-damage" },
+                  { "skillId": "swift-affliction" }
+                ]
+              ]
+            },
+            "auras": {
+              "title": "Aura Setup",
+              "description": "Defensive and offensive auras",
+              "isLinked": false,
+              "rows": [
+                [
+                  { "skillId": "malevolence" },
+                  { "skillId": "purity-of-fire" },
+                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "petrified-blood" }
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "cws-gladiator": {
+      "name": "CWS: Gladiator",
+      "description": "Cast When Stunned Gladiator variant",
+      "defaultProgression": "campaign",
+      "progressions": {
+        "campaign": {
+          "name": "Campaign",
+          "passiveTree": {
+            "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
+            "treeData": ""
+          },
+          "pobLink": "",
+          "skillSetups": {
+            "main": {
+              "title": "6-Link Setup",
               "description": "Primary damage setup",
               "isLinked": true,
               "rows": [
                 [
-                  { "skillId": "righteous-fire" },
-                  { "skillId": "elemental-focus-support" },
+                  { "skillId": "detonate-dead" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "concentrated-effect" }
+                ],
+                [
+                  { "skillId": "aoe-support" },
                   { "skillId": "burning-damage" },
-                  { "skillId": "efficacy-support" },
-                  { "skillId": "aoe-support" }
+                  { "skillId": "swift-affliction" }
                 ]
               ]
             },
-            "setup2": {
-              "title": "Setup 2 - Fire Trap",
-              "description": "Secondary damage setup",
-              "isLinked": true,
-              "rows": [
-                [
-                  { "skillId": "fire-trap" },
-                  { "skillId": "trap-mine-damage-support" },
-                  { "skillId": "controlled-destruction-support" },
-                  { "skillId": "burning-damage" }
-                ]
-              ]
-            },
-            "setup3": {
-              "title": "Setup 3 - Movement",
-              "description": "Mobility setup",
-              "isLinked": true,
-              "rows": [
-                [
-                  { "skillId": "shield-charge" },
-                  { "skillId": "faster-attacks-support" }
-                ]
-              ]
-            },
-            "setup4": {
-              "title": "Setup 4 - Utility & Auras",
-              "description": "Utility skills and auras",
+            "auras": {
+              "title": "Aura Setup",
+              "description": "Defensive and offensive auras",
               "isLinked": false,
               "rows": [
                 [
-                  { "skillId": "frostblink" },
-                  { "skillId": "scorching-ray" },
-                  { "skillId": "flammability" },
-                  { "skillId": "purity-of-elements" },
+                  { "skillId": "malevolence" },
                   { "skillId": "purity-of-fire" },
-                  { "skillId": "vitality" }
+                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "petrified-blood" }
                 ]
               ]
             }
