@@ -585,6 +585,40 @@ const { loadouts, skills } = skillsData;
     color: var(--color-text-subtle);
   }
 
+  /* Animated TAG effect for structured tags (e.g., "OF SCAVENGING") */
+  :global(.gem-tag) {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-top: 2px;
+    background: repeating-linear-gradient(
+      90deg,
+      #1a0a00 0%,
+      #ff4500 12.5%,
+      #ff6a00 25%,
+      #cc3300 37.5%,
+      #ff8c00 50%,
+      #e65c00 62.5%,
+      #ff4500 75%,
+      #cc3300 87.5%,
+      #1a0a00 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gem-tag-flow 3s linear infinite;
+  }
+
+  @keyframes gem-tag-flow {
+    0% { background-position: 0 0; }
+    100% { background-position: 200px 0; }
+  }
+
+  :global(.gem-icon:hover .gem-tag) {
+    filter: brightness(1.3);
+  }
+
   @media (max-width: 600px) {
     .loadout-header {
       flex-direction: column;
@@ -682,7 +716,14 @@ const { loadouts, skills } = skillsData;
   function hasMainTag(skillId) {
     const skill = skills[skillId];
     if (!skill || !skill.tags) return false;
-    return skill.tags.some(tag => tag === 'main' || (typeof tag === 'object' && tag.name));
+    return skill.tags.some(tag => tag === 'main');
+  }
+
+  // Get structured tags (objects with prefix/name) for animated effects
+  function getStructuredTags(skillId) {
+    const skill = skills[skillId];
+    if (!skill || !skill.tags) return [];
+    return skill.tags.filter(tag => typeof tag === 'object' && tag.prefix && tag.name);
   }
 
   // Render a single gem icon
@@ -695,6 +736,12 @@ const { loadouts, skills } = skillsData;
     const isSupport = skill.isSupport;
     const level = skill.level || 20;
     const levelWarning = skill.levelWarning;
+    const structuredTags = getStructuredTags(skillId);
+
+    // Build tag HTML with animated effect
+    const tagsHtml = structuredTags.map(tag =>
+      `<span class="gem-tag">${tag.prefix} ${tag.name}</span>`
+    ).join('');
 
     return `
       <div class="gem-icon">
@@ -703,6 +750,7 @@ const { loadouts, skills } = skillsData;
           <span class="gem-level${levelWarning ? ' gem-level--warning' : ''}">${level}</span>
         </div>
         <span class="gem-name${isSupport ? ' gem-name--support' : ''}">${skill.baseName}</span>
+        ${tagsHtml}
       </div>
     `;
   }
