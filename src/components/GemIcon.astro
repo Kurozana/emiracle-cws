@@ -65,10 +65,9 @@ const sizeMap = {
         <span class="gem-icon__letter">{baseName.charAt(0)}</span>
       </div>
     )}
-    {level !== undefined && (
-      <span class:list={['gem-icon__level', { 'gem-icon__level--warning': levelWarning }]}>
-        {levelWarning && <span class="gem-icon__level-warning">!</span>}
-        {level}
+    {levelWarning && level !== undefined && (
+      <span class="gem-icon__level gem-icon__level--warning">
+        <span class="gem-icon__level-warning">!</span>{level}
       </span>
     )}
   </div>

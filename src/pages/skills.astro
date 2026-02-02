@@ -518,6 +518,7 @@ const { loadouts, skills } = skillsData;
   }
 
   /* Transfigured Gem effect - renders INLINE with base skill name */
+  /* Default: Fire/Orange gradient (SCAVENGING style) */
   :global(.gem-transfigured) {
     display: inline;
     font-size: inherit;
@@ -540,6 +541,66 @@ const { loadouts, skills } = skillsData;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: gem-transfigured-flow 3s linear infinite;
+  }
+
+  /* PELTING - Blue/Ice gradient (overrides default) */
+  :global(.gem-transfigured--pelting) {
+    background: repeating-linear-gradient(
+      90deg,
+      #0a0a1a 0%,
+      #4169e1 12.5%,
+      #6495ed 25%,
+      #1e90ff 37.5%,
+      #87ceeb 50%,
+      #4682b4 62.5%,
+      #4169e1 75%,
+      #1e90ff 87.5%,
+      #0a0a1a 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* VOLLEYS - Green/Emerald gradient (dexterity theme) */
+  :global(.gem-transfigured--volleys) {
+    background: repeating-linear-gradient(
+      90deg,
+      #001a0a 0%,
+      #00ff7f 12.5%,
+      #32cd32 25%,
+      #228b22 37.5%,
+      #7fff00 50%,
+      #00fa9a 62.5%,
+      #00ff7f 75%,
+      #32cd32 87.5%,
+      #001a0a 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* COMBUSTING - Yellow/Amber gradient (burning theme) */
+  :global(.gem-transfigured--combusting) {
+    background: repeating-linear-gradient(
+      90deg,
+      #1a1a00 0%,
+      #ffd700 12.5%,
+      #ffb800 25%,
+      #ff8c00 37.5%,
+      #ffe066 50%,
+      #ffcc00 62.5%,
+      #ffd700 75%,
+      #ff9900 87.5%,
+      #1a1a00 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   @keyframes gem-transfigured-flow {
@@ -705,12 +766,14 @@ const { loadouts, skills } = skillsData;
     const gemColor = colorMap[skill.color] || colorMap.blue;
 
     // Build transfigured gem HTML with animated effect (renders INLINE with base name)
-    const transfiguredHtml = structuredTags.map(tag =>
-      `<span class="gem-transfigured">${tag.prefix} ${tag.name}</span>`
-    ).join('');
+    // Each suffix/prefix gets a unique color class based on name
+    const transfiguredHtml = structuredTags.map(tag => {
+      const colorClass = `gem-transfigured--${tag.name.toLowerCase()}`;
+      return `<span class="gem-transfigured ${colorClass}">${tag.prefix} ${tag.name}</span>`;
+    }).join('');
 
-    // Level display: show !<level> if warning, otherwise just level
-    const levelDisplay = levelWarning ? `!${level}` : level;
+    // Level display: only show when there's a warning (otherwise assumed max level)
+    const levelHtml = levelWarning ? `<span class="gem-level gem-level--warning">!${level}</span>` : '';
 
     // Build wrapper classes
     let wrapperClasses = 'gem-icon-wrapper';
@@ -721,7 +784,7 @@ const { loadouts, skills } = skillsData;
       <div class="gem-icon">
         <div class="${wrapperClasses}" style="--gem-color: ${gemColor}">
           ${iconUrl ? `<img src="${iconUrl}" alt="${skill.baseName}" loading="lazy">` : ''}
-          <span class="gem-level${levelWarning ? ' gem-level--warning' : ''}">${levelDisplay}</span>
+          ${levelHtml}
         </div>
         <span class="gem-name${isSupport ? ' gem-name--support' : ''}">${skill.baseName}${transfiguredHtml}</span>
       </div>

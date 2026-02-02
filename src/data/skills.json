@@ -5,163 +5,460 @@
       "name": "Cast When Stunned",
       "description": "Standard CWS Chieftain",
       "background": "/SRC_IMG/chief.png",
-      "defaultProgression": "campaign",
+      "defaultProgression": "minimum-requirement",
       "progressions": {
-        "campaign": {
-          "name": "Campaign",
+        "minimum-requirement": {
+          "name": "Minimum Requirement",
           "passiveTree": {
             "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
             "treeData": ""
           },
-          "pobLink": "",
+          "pobLink": "https://pobb.in/J8Z_ekJsW1hs",
           "skillSetups": {
             "main": {
-              "title": "6-Link Setup",
-              "description": "Your primary damage setup",
+              "title": "Main Setup",
+              "description": "Primary damage setup",
               "isLinked": true,
               "rows": [
                 [
                   { "skillId": "detonate-dead" },
                   { "skillId": "cast-when-stunned" },
-                  { "skillId": "concentrated-effect" }
-                ],
+                  { "skillId": "deadly-ailments" },
+                  { "skillId": "burning-damage" }
+                ]
+              ]
+            },
+            "main2": {
+              "title": "Main Setup 2",
+              "description": "Secondary damage setup",
+              "isLinked": true,
+              "rows": [
                 [
-                  { "skillId": "aoe-support" },
+                  { "skillId": "fire-trap" },
+                  { "skillId": "trap-mine-damage-support" },
+                  { "skillId": "controlled-destruction-support" },
+                  { "skillId": "elemental-focus-support" }
+                ]
+              ]
+            },
+            "rf": {
+              "title": "RF Setup",
+              "description": "Righteous Fire damage over time",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "righteous-fire" },
                   { "skillId": "burning-damage" },
-                  { "skillId": "swift-affliction" }
+                  { "skillId": "elemental-focus-support" },
+                  { "skillId": "efficacy-support" }
+                ]
+              ]
+            },
+            "weapon": {
+              "title": "Weapon Setup",
+              "description": "Weapon socket setup",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "punishment" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "lifetap" }
                 ]
               ]
             },
             "auras": {
               "title": "Aura Setup",
-              "description": "Defensive and offensive auras",
-              "isLinked": false,
+              "description": "Your main aura setup",
+              "isLinked": true,
               "rows": [
                 [
-                  { "skillId": "malevolence" },
-                  { "skillId": "purity-of-fire" },
-                  { "skillId": "flesh-and-stone" },
-                  { "skillId": "petrified-blood" }
+                  { "skillId": "purity-of-fire" }
+                ],
+                [
+                  { "skillId": "petrified-blood" },
+                  { "skillId": "eternal-blessing" }
+                ]
+              ]
+            },
+            "movement": {
+              "title": "Movement Setup",
+              "description": "Movement and utility",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "shield-charge" },
+                  { "skillId": "faster-attacks-support" },
+                  { "skillId": "lifetap" }
+                ],
+                [
+                  { "skillId": "frostblink" }
                 ]
               ]
             }
           }
         },
-        "maps": {
-          "name": "Maps",
+        "early-upgrade": {
+          "name": "Early Upgrade",
           "passiveTree": {
             "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
             "treeData": ""
           },
-          "pobLink": "",
+          "pobLink": "https://pobb.in/J8Z_ekJsW1hs",
           "skillSetups": {
             "main": {
-              "title": "6-Link Setup",
-              "description": "Map clearing damage setup",
+              "title": "Main Setup",
+              "description": "Primary damage setup",
               "isLinked": true,
               "rows": [
                 [
                   { "skillId": "detonate-dead" },
                   { "skillId": "cast-when-stunned" },
-                  { "skillId": "concentrated-effect" }
+                  { "skillId": "deadly-ailments" },
+                  { "skillId": "burning-damage" }
+                ]
+              ]
+            },
+            "main2": {
+              "title": "Fire Trap Setup",
+              "description": "Secondary damage setup",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "fire-trap" },
+                  { "skillId": "trap-mine-damage-support" },
+                  { "skillId": "controlled-destruction-support" },
+                  { "skillId": "elemental-focus-support" }
+                ]
+              ]
+            },
+            "rf": {
+              "title": "RF Setup",
+              "description": "Righteous Fire damage over time",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "righteous-fire" },
+                  { "skillId": "burning-damage" },
+                  { "skillId": "elemental-focus-support" },
+                  { "skillId": "efficacy-support" }
+                ]
+              ]
+            },
+            "weapon": {
+              "title": "Punishment Setup",
+              "description": "Curse and utility",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "punishment" },
+                  { "skillId": "cast-when-stunned" }
                 ],
                 [
-                  { "skillId": "aoe-support" },
-                  { "skillId": "burning-damage" },
-                  { "skillId": "swift-affliction" }
+                  { "skillId": "frostblink" }
                 ]
               ]
             },
             "auras": {
               "title": "Aura Setup",
-              "description": "Defensive and offensive auras",
+              "description": "Your main aura setup",
               "isLinked": false,
               "rows": [
                 [
-                  { "skillId": "malevolence" },
-                  { "skillId": "purity-of-fire" },
-                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "purity-of-fire" }
+                ],
+                [
                   { "skillId": "petrified-blood" }
+                ]
+              ]
+            },
+            "aura-movement": {
+              "title": "Aura & Movement",
+              "description": "Malevolence aura and movement skills",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "malevolence" },
+                  { "skillId": "eternal-blessing" }
+                ],
+                [
+                  { "skillId": "shield-charge" },
+                  { "skillId": "faster-attacks-support" }
                 ]
               ]
             }
           }
         },
-        "no-bloodnotch": {
-          "name": "No Bloodnotch Swap",
+        "tier-16-maps": {
+          "name": "Tier 16 Maps",
           "passiveTree": {
             "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
             "treeData": ""
           },
-          "pobLink": "",
+          "pobLink": "https://pobb.in/J8Z_ekJsW1hs",
           "skillSetups": {
             "main": {
-              "title": "6-Link Setup",
-              "description": "Setup without Bloodnotch",
+              "title": "Main Setup",
+              "description": "Primary damage setup",
               "isLinked": true,
               "rows": [
                 [
                   { "skillId": "detonate-dead" },
                   { "skillId": "cast-when-stunned" },
-                  { "skillId": "concentrated-effect" }
+                  { "skillId": "deadly-ailments" },
+                  { "skillId": "burning-damage" }
+                ]
+              ]
+            },
+            "firestorm": {
+              "title": "Firestorm Setup",
+              "description": "Secondary damage with Firestorm",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "firestorm-of-pelting" },
+                  { "skillId": "flame-surge" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "spell-cascade-support" }
+                ]
+              ]
+            },
+            "rf": {
+              "title": "RF Setup",
+              "description": "Righteous Fire damage over time",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "righteous-fire" },
+                  { "skillId": "aoe-support" },
+                  { "skillId": "elemental-focus-support" },
+                  { "skillId": "efficacy-support" }
+                ]
+              ]
+            },
+            "weapon": {
+              "title": "Punishment Setup",
+              "description": "Curse and utility",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "punishment" },
+                  { "skillId": "cast-when-stunned" }
                 ],
                 [
-                  { "skillId": "aoe-support" },
-                  { "skillId": "burning-damage" },
-                  { "skillId": "swift-affliction" }
+                  { "skillId": "frostblink" }
                 ]
               ]
             },
             "auras": {
               "title": "Aura Setup",
-              "description": "Defensive and offensive auras",
+              "description": "Your main aura setup",
               "isLinked": false,
               "rows": [
                 [
-                  { "skillId": "malevolence" },
-                  { "skillId": "purity-of-fire" },
-                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "purity-of-fire" }
+                ],
+                [
                   { "skillId": "petrified-blood" }
+                ]
+              ]
+            },
+            "aura-movement": {
+              "title": "Aura & Movement",
+              "description": "Malevolence aura and movement skills",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "malevolence" },
+                  { "skillId": "eternal-blessing" }
+                ],
+                [
+                  { "skillId": "shield-charge" },
+                  { "skillId": "faster-attacks-support" }
                 ]
               ]
             }
           }
         },
-        "bloodnotch": {
-          "name": "Bloodnotch Swap",
+        "end-game": {
+          "name": "End-Game",
           "passiveTree": {
             "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
             "treeData": ""
           },
-          "pobLink": "",
+          "pobLink": "https://pobb.in/J8Z_ekJsW1hs",
           "skillSetups": {
             "main": {
-              "title": "6-Link Setup",
-              "description": "Setup with Bloodnotch equipped",
+              "title": "Main Setup",
+              "description": "Primary damage setup with transfigured gems",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "flame-surge-of-combusting" },
+                  { "skillId": "bladefall-of-volleys" },
+                  { "skillId": "firestorm-of-pelting" },
+                  { "skillId": "frost-bomb" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "awakened-spell-cascade" }
+                ]
+              ]
+            },
+            "detonate": {
+              "title": "Detonate Dead Setup",
+              "description": "Secondary damage setup",
               "isLinked": true,
               "rows": [
                 [
                   { "skillId": "detonate-dead" },
                   { "skillId": "cast-when-stunned" },
-                  { "skillId": "concentrated-effect" }
+                  { "skillId": "deadly-ailments" },
+                  { "skillId": "burning-damage" }
+                ]
+              ]
+            },
+            "rf": {
+              "title": "RF Setup",
+              "description": "Righteous Fire damage over time",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "righteous-fire" },
+                  { "skillId": "awakened-aoe-support" },
+                  { "skillId": "elemental-focus-support" },
+                  { "skillId": "efficacy-support" }
+                ]
+              ]
+            },
+            "weapon": {
+              "title": "Punishment Setup",
+              "description": "Curse and utility",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "punishment" },
+                  { "skillId": "cast-when-stunned" }
                 ],
                 [
-                  { "skillId": "aoe-support" },
-                  { "skillId": "burning-damage" },
-                  { "skillId": "swift-affliction" }
+                  { "skillId": "frostblink" }
                 ]
               ]
             },
             "auras": {
               "title": "Aura Setup",
-              "description": "Defensive and offensive auras",
+              "description": "Your main aura setup",
               "isLinked": false,
               "rows": [
                 [
-                  { "skillId": "malevolence" },
-                  { "skillId": "purity-of-fire" },
-                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "flesh-and-stone" }
+                ],
+                [
                   { "skillId": "petrified-blood" }
+                ]
+              ]
+            },
+            "aura-movement": {
+              "title": "Aura & Movement",
+              "description": "Malevolence aura and movement skills",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "malevolence" },
+                  { "skillId": "eternal-blessing" }
+                ],
+                [
+                  { "skillId": "shield-charge" },
+                  { "skillId": "faster-attacks-support" }
+                ]
+              ]
+            }
+          }
+        },
+        "aspirational": {
+          "name": "Aspirational",
+          "passiveTree": {
+            "plannerUrl": "https://maxroll.gg/poe2/passive-tree-planner",
+            "treeData": ""
+          },
+          "pobLink": "https://pobb.in/J8Z_ekJsW1hs",
+          "skillSetups": {
+            "main": {
+              "title": "Main Setup",
+              "description": "Primary damage setup with transfigured gems",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "flame-surge-of-combusting" },
+                  { "skillId": "bladefall-of-volleys" },
+                  { "skillId": "firestorm-of-pelting" },
+                  { "skillId": "frost-bomb" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "awakened-spell-cascade" }
+                ]
+              ]
+            },
+            "detonate": {
+              "title": "Detonate Dead Setup",
+              "description": "Secondary damage setup with awakened supports",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "detonate-dead" },
+                  { "skillId": "cast-when-stunned" },
+                  { "skillId": "awakened-deadly-ailments" },
+                  { "skillId": "awakened-burning-damage" }
+                ]
+              ]
+            },
+            "rf": {
+              "title": "RF Setup",
+              "description": "Righteous Fire damage over time with awakened supports",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "righteous-fire" },
+                  { "skillId": "awakened-aoe-support" },
+                  { "skillId": "awakened-elemental-focus" },
+                  { "skillId": "efficacy-support" }
+                ]
+              ]
+            },
+            "weapon": {
+              "title": "Punishment Setup",
+              "description": "Curse and utility",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "punishment" },
+                  { "skillId": "cast-when-stunned" }
+                ],
+                [
+                  { "skillId": "frostblink" }
+                ]
+              ]
+            },
+            "auras": {
+              "title": "Aura Setup",
+              "description": "Linked aura setup with Enlighten",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "petrified-blood" },
+                  { "skillId": "flesh-and-stone" },
+                  { "skillId": "enlighten-support" }
+                ]
+              ]
+            },
+            "aura-movement": {
+              "title": "Aura & Movement",
+              "description": "Malevolence aura and movement skills",
+              "isLinked": true,
+              "rows": [
+                [
+                  { "skillId": "malevolence" },
+                  { "skillId": "eternal-blessing" }
+                ],
+                [
+                  { "skillId": "shield-charge" },
+                  { "skillId": "faster-attacks-support" }
                 ]
               ]
             }
@@ -225,8 +522,7 @@
       "isSupport": true,
       "icon": "/gems/CWS.png",
       "tags": [],
-      "level": 1,
-      "levelWarning": true
+      "level": 20
     },
     "concentrated-effect": {
       "baseName": "Concentrated Effect",
@@ -406,6 +702,152 @@
       "isSupport": false,
       "icon": "/gems/Vitality_skill_icon.png",
       "tags": ["main"],
+      "level": 20
+    },
+    "deadly-ailments": {
+      "baseName": "Deadly Ailments",
+      "color": "green",
+      "isSupport": true,
+      "icon": "/gems/Deadly_Ailments_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "punishment": {
+      "baseName": "Punishment",
+      "color": "red",
+      "isSupport": false,
+      "icon": "/gems/Punishment_skill.png",
+      "tags": ["main"],
+      "level": 20,
+      "isCurse": true
+    },
+    "lifetap": {
+      "baseName": "Lifetap",
+      "color": "red",
+      "isSupport": true,
+      "icon": "/gems/Lifetap_Support_inventory.png",
+      "tags": [],
+      "level": 20
+    },
+    "eternal-blessing": {
+      "baseName": "Eternal Blessing",
+      "color": "red",
+      "isSupport": true,
+      "icon": "/gems/Eternal_Blessing_Support.png",
+      "tags": [],
+      "level": 20
+    },
+    "firestorm-of-pelting": {
+      "baseName": "Firestorm",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Firestorm_skill.png",
+      "tags": [
+        "main",
+        { "prefix": "OF", "name": "PELTING" }
+      ],
+      "level": 20
+    },
+    "flame-surge": {
+      "baseName": "Flame Surge",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Flame_Surge.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "spell-cascade-support": {
+      "baseName": "Spell Cascade Support",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Spell_Cascade_Support.png",
+      "tags": [],
+      "level": 20
+    },
+    "bladefall": {
+      "baseName": "Bladefall",
+      "color": "green",
+      "isSupport": false,
+      "icon": "/gems/Bladefall_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "bladefall-of-volleys": {
+      "baseName": "Bladefall",
+      "color": "green",
+      "isSupport": false,
+      "icon": "/gems/Bladefall_skill_icon.png",
+      "tags": [
+        "main",
+        { "prefix": "OF", "name": "VOLLEYS" }
+      ],
+      "level": 20
+    },
+    "flame-surge-of-combusting": {
+      "baseName": "Flame Surge",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Flame_Surge.png",
+      "tags": [
+        "main",
+        { "prefix": "OF", "name": "COMBUSTING" }
+      ],
+      "level": 20
+    },
+    "frost-bomb": {
+      "baseName": "Frost Bomb",
+      "color": "blue",
+      "isSupport": false,
+      "icon": "/gems/Frost_Bomb_skill_icon.png",
+      "tags": ["main"],
+      "level": 20
+    },
+    "awakened-aoe-support": {
+      "baseName": "Awakened Increased Area of Effect",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Awakened_Increased_Area_of_Effect_Support.png",
+      "tags": [],
+      "level": 20
+    },
+    "awakened-spell-cascade": {
+      "baseName": "Awakened Spell Cascade",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Awakened_Spell_Cascade_Support.png",
+      "tags": [],
+      "level": 20
+    },
+    "awakened-deadly-ailments": {
+      "baseName": "Awakened Deadly Ailments",
+      "color": "green",
+      "isSupport": true,
+      "icon": "/gems/Awakened_Deadly_Ailments_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "awakened-burning-damage": {
+      "baseName": "Awakened Burning Damage",
+      "color": "red",
+      "isSupport": true,
+      "icon": "/gems/Awakened_Burning_Damage_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "awakened-elemental-focus": {
+      "baseName": "Awakened Elemental Focus",
+      "color": "blue",
+      "isSupport": true,
+      "icon": "/gems/Awakened_Elemental_Focus_Support_inventory_icon.png",
+      "tags": [],
+      "level": 20
+    },
+    "enlighten-support": {
+      "baseName": "Enlighten Support",
+      "color": "white",
+      "isSupport": true,
+      "icon": "/gems/Enlighten_Support_inventory_icon.png",
+      "tags": [],
       "level": 20
     }
   }

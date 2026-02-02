@@ -25,15 +25,18 @@ interface Props {
 
 const { baseName, tags = [], class: className } = Astro.props;
 
-// Build tag display strings from structured metadata
-const tagStrings = tags.map(tag => `${tag.prefix} ${tag.name}`);
+// Build tag data with display strings and color classes
+const tagData = tags.map(tag => ({
+  display: `${tag.prefix} ${tag.name}`,
+  colorClass: `skill-name__tag--${tag.name.toLowerCase()}`
+}));
 const hasTags = tags.length > 0;
 ---
 
 <span class:list={['skill-name', className]}>
   <span class="skill-name__base">{baseName}</span>
-  {hasTags && tagStrings.map(tagStr => (
-    <span class="skill-name__tag">{tagStr}</span>
+  {hasTags && tagData.map(tag => (
+    <span class:list={['skill-name__tag', tag.colorClass]}>{tag.display}</span>
   ))}
 </span>
 
@@ -48,8 +51,7 @@ const hasTags = tags.length > 0;
   }
 
   .skill-name__tag {
-    /* Fire/galaxy animated gradient - seamless rightward flow */
-    /* Gradient tiles perfectly: starts and ends with same color (#1a0a00) */
+    /* Default: Fire/Orange gradient (same as SCAVENGING) */
     background: repeating-linear-gradient(
       90deg,
       #1a0a00 0%,
@@ -71,6 +73,66 @@ const hasTags = tags.length > 0;
     margin-left: 0.25em;
   }
 
+  /* PELTING - Blue/Ice gradient (overrides default) */
+  .skill-name__tag--pelting {
+    background: repeating-linear-gradient(
+      90deg,
+      #0a0a1a 0%,
+      #4169e1 12.5%,
+      #6495ed 25%,
+      #1e90ff 37.5%,
+      #87ceeb 50%,
+      #4682b4 62.5%,
+      #4169e1 75%,
+      #1e90ff 87.5%,
+      #0a0a1a 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* VOLLEYS - Green/Emerald gradient (dexterity theme) */
+  .skill-name__tag--volleys {
+    background: repeating-linear-gradient(
+      90deg,
+      #001a0a 0%,
+      #00ff7f 12.5%,
+      #32cd32 25%,
+      #228b22 37.5%,
+      #7fff00 50%,
+      #00fa9a 62.5%,
+      #00ff7f 75%,
+      #32cd32 87.5%,
+      #001a0a 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* COMBUSTING - Yellow/Amber gradient (burning theme) */
+  .skill-name__tag--combusting {
+    background: repeating-linear-gradient(
+      90deg,
+      #1a1a00 0%,
+      #ffd700 12.5%,
+      #ffb800 25%,
+      #ff8c00 37.5%,
+      #ffe066 50%,
+      #ffcc00 62.5%,
+      #ffd700 75%,
+      #ff9900 87.5%,
+      #1a1a00 100%
+    );
+    background-size: 200px 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
   @keyframes fire-flow-seamless {
     0% {
       background-position: 0 0;
@@ -84,5 +146,20 @@ const hasTags = tags.length > 0;
   .skill-name:hover .skill-name__tag {
     filter: brightness(1.3);
     text-shadow: 0 0 12px rgba(255, 69, 0, 0.5);
+  }
+
+  /* Blue glow for pelting */
+  .skill-name:hover .skill-name__tag--pelting {
+    text-shadow: 0 0 12px rgba(65, 105, 225, 0.5);
+  }
+
+  /* Green glow for volleys */
+  .skill-name:hover .skill-name__tag--volleys {
+    text-shadow: 0 0 12px rgba(0, 255, 127, 0.5);
+  }
+
+  /* Yellow glow for combusting */
+  .skill-name:hover .skill-name__tag--combusting {
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
   }
 </style>
