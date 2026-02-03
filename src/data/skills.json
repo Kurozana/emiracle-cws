@@ -277,7 +277,23 @@
                 ]
               ]
             }
-          }
+          },
+          "gear": [
+            {
+              "id": "weapon1",
+              "gridArea": "Weapon",
+              "name": "Test Weapon",
+              "baseType": "Void Sceptre",
+              "rarity": "rare",
+              "quality": 20,
+              "implicitMods": ["20% increased Damage"],
+              "explicitMods": [
+                "+2 to Level of all Spell Skill Gems",
+                "62% increased Spell Damage"
+              ],
+              "image": "Gear/Heist_Sceptre.png"
+            }
+          ]
         },
         "end-game": {
           "name": "End-Game",
@@ -370,7 +386,177 @@
                 ]
               ]
             }
-          }
+          },
+          "gear": [
+            {
+              "id": "weapon1",
+              "gridArea": "Weapon",
+              "name": "Heist Sceptre",
+              "baseType": "Void Sceptre",
+              "rarity": "unique",
+              "quality": 20,
+              "implicitMods": ["40% increased Elemental Damage"],
+              "explicitMods": [
+                "+2 to Level of all Spell Skill Gems",
+                "120% increased Spell Damage",
+                "+50 to maximum Mana",
+                "15% increased Cast Speed"
+              ],
+              "flavorText": "The heist that changed everything.",
+              "image": "Gear/Heist_Sceptre.png"
+            },
+            {
+              "id": "helmet",
+              "gridArea": "Helm",
+              "name": "Placeholder Helm",
+              "baseType": "Hubris Circlet",
+              "rarity": "rare",
+              "quality": 20,
+              "explicitMods": [
+                "+80 to maximum Life",
+                "+40% to Fire Resistance",
+                "+35% to Cold Resistance"
+              ]
+            },
+            {
+              "id": "offhand",
+              "gridArea": "Offhand",
+              "name": "Placeholder Shield",
+              "baseType": "Titanium Spirit Shield",
+              "rarity": "rare",
+              "explicitMods": [
+                "+100 to maximum Energy Shield",
+                "+30% to Lightning Resistance"
+              ]
+            },
+            {
+              "id": "body_armour",
+              "gridArea": "BodyArmour",
+              "name": "Placeholder Chest",
+              "baseType": "Vaal Regalia",
+              "rarity": "rare",
+              "quality": 28,
+              "explicitMods": [
+                "+120 to maximum Life",
+                "+400 to maximum Energy Shield"
+              ]
+            },
+            {
+              "id": "amulet",
+              "gridArea": "Amulet",
+              "name": "Placeholder Amulet",
+              "baseType": "Onyx Amulet",
+              "rarity": "magic",
+              "implicitMods": ["+16 to all Attributes"],
+              "explicitMods": ["+25% to Global Critical Strike Multiplier"]
+            },
+            {
+              "id": "ring_left",
+              "gridArea": "RingL",
+              "name": "Placeholder Ring",
+              "baseType": "Diamond Ring",
+              "rarity": "rare",
+              "implicitMods": ["26% increased Global Critical Strike Chance"],
+              "explicitMods": [
+                "+50 to maximum Life",
+                "+30% to Fire Resistance"
+              ]
+            },
+            {
+              "id": "ring_right",
+              "gridArea": "RingR",
+              "name": "Placeholder Ring",
+              "baseType": "Sapphire Ring",
+              "rarity": "rare",
+              "implicitMods": ["+30% to Cold Resistance"],
+              "explicitMods": [
+                "+45 to maximum Life",
+                "+25% to Lightning Resistance"
+              ]
+            },
+            {
+              "id": "gloves",
+              "gridArea": "Gloves",
+              "name": "Placeholder Gloves",
+              "baseType": "Sorcerer Gloves",
+              "rarity": "rare",
+              "explicitMods": [
+                "+60 to maximum Life",
+                "+40% to Cold Resistance"
+              ]
+            },
+            {
+              "id": "boots",
+              "gridArea": "Boots",
+              "name": "Placeholder Boots",
+              "baseType": "Sorcerer Boots",
+              "rarity": "rare",
+              "explicitMods": [
+                "+70 to maximum Life",
+                "30% increased Movement Speed"
+              ]
+            },
+            {
+              "id": "belt",
+              "gridArea": "Belt",
+              "name": "Placeholder Belt",
+              "baseType": "Stygian Vise",
+              "rarity": "rare",
+              "implicitMods": ["Has 1 Abyssal Socket"],
+              "explicitMods": [
+                "+90 to maximum Life",
+                "+35% to Fire Resistance"
+              ]
+            },
+            {
+              "id": "jewel1",
+              "gridArea": "Jewel1",
+              "name": "Bloodnotch",
+              "baseType": "Cobalt Jewel",
+              "rarity": "unique",
+              "explicitMods": [
+                "45% of Damage taken from Stunning Hits is Recovered as Life"
+              ],
+              "flavorText": "At the core of the warrior's spirit,\na fierce determination burns,\nigniting their capacity to endure.",
+              "image": "Gear/Bloodnotch.webp"
+            },
+            {
+              "id": "jewel2",
+              "gridArea": "Jewel2",
+              "name": "Bloodnotch",
+              "baseType": "Cobalt Jewel",
+              "rarity": "unique",
+              "explicitMods": [
+                "45% of Damage taken from Stunning Hits is Recovered as Life"
+              ],
+              "flavorText": "At the core of the warrior's spirit,\na fierce determination burns,\nigniting their capacity to endure.",
+              "image": "Gear/Bloodnotch.webp"
+            },
+            {
+              "id": "jewel3",
+              "gridArea": "Jewel3",
+              "name": "Bloodnotch",
+              "baseType": "Cobalt Jewel",
+              "rarity": "unique",
+              "explicitMods": [
+                "45% of Damage taken from Stunning Hits is Recovered as Life"
+              ],
+              "flavorText": "At the core of the warrior's spirit,\na fierce determination burns,\nigniting their capacity to endure.",
+              "image": "Gear/Bloodnotch.webp"
+            },
+            {
+              "id": "jewel4",
+              "gridArea": "Jewel4",
+              "name": "Bloodnotch",
+              "baseType": "Cobalt Jewel",
+              "rarity": "unique",
+              "explicitMods": [
+                "45% of Damage taken from Stunning Hits is Recovered as Life"
+              ],
+              "flavorText": "At the core of the warrior's spirit,\na fierce determination burns,\nigniting their capacity to endure.",
+              "image": "Gear/Bloodnotch.webp"
+            }
+          ]
         },
         "aspirational": {
           "name": "Aspirational",

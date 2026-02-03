@@ -6,113 +6,376 @@ import SocialLinks from '../components/SocialLinks.astro';
 // FAQ Categories and Questions
 const faqCategories = [
   {
-    id: 'basics',
-    name: 'Build Basics',
-    icon: '?',
+    id: 'getting-started',
+    name: 'Getting Started',
     questions: [
       {
-        q: 'What is Cast When Stunned (CWS)?',
-        a: '[Answer will be added - explain the mechanic and build concept]'
+        faqId: 'FAQ001',
+        q: 'How can I...? What...? Where...?',
+        a: 'Search your question before asking. 99% of questions have already been answered. Always refer to:\n1) Video guide\n2) Google doc\n3) FAQ\n4) Search\n5) Ask\n\nIt\'s alright to ask, just make sure you do so when you actually can\'t find the answer.'
       },
       {
-        q: 'What class/ascendancy should I play?',
-        a: '[Answer will be added - recommended class and ascendancy choices]'
+        faqId: 'FAQ002',
+        q: 'What are the viable starters?',
+        a: 'Refer to video guide'
       },
       {
-        q: 'Is this build beginner-friendly?',
-        a: '[Answer will be added - difficulty assessment and learning curve]'
+        faqId: 'FAQ003',
+        q: 'When can I swap to CWS? Minimum gear/Level/Ascendancy points/etc?',
+        a: 'Refer to video guide'
       },
       {
-        q: 'What are the pros and cons of this build?',
-        a: '[Answer will be added - strengths and weaknesses]'
+        faqId: 'FAQ014',
+        q: 'What are the best leveling uniques or items for this build?',
+        a: 'Refer to starter build guide'
+      },
+      {
+        faqId: 'FAQ016',
+        q: 'Bandit strategy?',
+        a: 'Take what you want early, respec later to kill all'
+      },
+      {
+        faqId: 'FAQ032',
+        q: 'What gems should I level in off-hand during campaign?',
+        a: 'CWS and Petrified Blood'
+      },
+      {
+        faqId: 'FAQ033',
+        q: 'How do I get 4 voidstone completion?',
+        a: 'Refer to starter build guide'
       },
     ]
   },
   {
-    id: 'gear',
-    name: 'Gear & Items',
-    icon: '⚔',
+    id: 'gear-requirements',
+    name: 'Gear & Requirements',
     questions: [
       {
-        q: "What's the minimum budget to start?",
-        a: '[Answer will be added - budget tiers and expectations]'
+        faqId: 'FAQ004',
+        q: 'What % Bloodnotch do I need?',
+        a: 'At least 50%'
       },
       {
-        q: 'What are the must-have uniques?',
-        a: '[Answer will be added - essential unique items]'
+        faqId: 'FAQ005',
+        q: 'What % Immutable Force do I need?',
+        a: 'Any roll is fine, but everything under 961% is the same (2 server ticks vs 1 server tick). See Reddit thread for breakpoints.'
       },
       {
-        q: 'What stats should I prioritize on rare gear?',
-        a: '[Answer will be added - stat priorities by slot]'
+        faqId: 'FAQ006',
+        q: 'How much recoup do I need?',
+        a: '20-30%. 30%+ is most comfortable. 20% is serviceable but not recommended. Get it on jewels/tree.'
       },
       {
-        q: 'What jewels do I need?',
-        a: '[Answer will be added - jewel recommendations]'
+        faqId: 'FAQ007',
+        q: 'Which ignite prolif should I use?',
+        a: 'Gloves can replace Fan the Flames, but it may be expensive. You only need one source.'
+      },
+      {
+        faqId: 'FAQ013',
+        q: 'Does gain 1/2/3 charges make a big difference on flasks?',
+        a: '1: usually too little\n2: acceptable\n3: best option'
+      },
+      {
+        faqId: 'FAQ021',
+        q: 'Rise of the Phoenix vs Dawnbreaker vs Prism Guardian vs Crafted Shield?',
+        a: 'Refer to progression guide'
+      },
+      {
+        faqId: 'FAQ022',
+        q: 'Do bases matter for Gloves / Helm / Boots?',
+        a: 'Avoid pure evasion or ES bases. Armor is acceptable but low impact. Other bases are downgrades.'
+      },
+      {
+        faqId: 'FAQ031',
+        q: 'What item filter should I use?',
+        a: 'No all-in-one filter; you must prepare your own'
+      },
+      {
+        faqId: 'FAQ039',
+        q: 'What anoint should I use?',
+        a: 'Cheap: any life node\nExpensive: Defiled Forces'
+      },
+      {
+        faqId: 'FAQ042',
+        q: 'Mageblood?',
+        a: 'Only after all other upgrades. Very marginal benefit.'
       },
     ]
   },
   {
     id: 'mechanics',
-    name: 'Mechanics & Gameplay',
-    icon: '⚙',
+    name: 'Build Mechanics',
     questions: [
       {
-        q: 'How does the stun threshold work?',
-        a: '[Answer will be added - stun mechanics explanation]'
+        faqId: 'FAQ008',
+        q: 'Why no Svalinn or block-based CWS?',
+        a: 'Bloodnotch already functions as near-100% block against non-one-shots. Adding Svalinn reduces max hit and shield value, increasing one-shot vulnerability.'
       },
       {
-        q: 'What skills trigger from CWS?',
-        a: '[Answer will be added - supported skills list]'
+        faqId: 'FAQ010',
+        q: 'Why am I not getting stunned / not proccing my skills?',
+        a: 'Check the following:\n- Pantheon cannot be Brine King\n- CWS should be 20/20 or close\n- Low max ES\n- Low evasion\n- Valyrium must be equipped'
       },
       {
-        q: 'How do I sustain being stunned?',
-        a: '[Answer will be added - stun sustain mechanics]'
+        faqId: 'FAQ017',
+        q: 'Do I need 100% ignite chance?',
+        a: 'Yes'
       },
       {
-        q: 'What is the ideal playstyle?',
-        a: '[Answer will be added - how to play the build effectively]'
+        faqId: 'FAQ018',
+        q: 'Can I still run Fire Trap for single target?',
+        a: 'No, it is redundant. Hinekora ignites are sufficient even for Wave 15 Omni.'
+      },
+      {
+        faqId: 'FAQ019',
+        q: 'What is the minimum STR / INT / DEX I need?',
+        a: 'STR: covered by pathing\nDEX: ~100 (hard to get)\nINT: ~150 (may require affixes)'
+      },
+      {
+        faqId: 'FAQ020',
+        q: 'How do I get full ailment immunity?',
+        a: 'We do not get full immunity; it is handled via flasks'
+      },
+      {
+        faqId: 'FAQ023',
+        q: 'How do I generate endurance charges?',
+        a: 'Budget: Inexorable node\nExpensive: Unflinching Flesh and Flame'
+      },
+      {
+        faqId: 'FAQ024',
+        q: 'How do I get max resistances?',
+        a: 'Passive points, jewels, Purity of Fire level 21, implicits'
+      },
+      {
+        faqId: 'FAQ037',
+        q: 'How does Hateful Accuser work?',
+        a: 'It summons small monsters that are killed with RF and popped via Hinekora.'
+      },
+      {
+        faqId: 'FAQ040',
+        q: 'How much crit mitigation do I need?',
+        a: 'Stun mastery is sufficient'
+      },
+      {
+        faqId: 'FAQ044',
+        q: 'Do I need 155 DEX for Bladefall?',
+        a: 'No. Damage does not matter; it is used for hit frequency.'
+      },
+      {
+        faqId: 'FAQ045',
+        q: 'Gem quality priority?',
+        a: 'Petrified Blood > Cast When Stunned > everything else'
+      },
+      {
+        faqId: 'FAQ051',
+        q: 'Why Dark Seer?',
+        a: 'High life, 10% increased damage dealt, 10% reduced damage taken'
+      },
+      {
+        faqId: 'FAQ052',
+        q: 'Do triggered curses refresh ignites?',
+        a: 'No'
+      },
+      {
+        faqId: 'FAQ054',
+        q: 'Does Wellspring of Creation increase DD damage?',
+        a: 'No'
+      },
+      {
+        faqId: 'FAQ055',
+        q: 'Why do we use Bladefall / Frost Bomb?',
+        a: 'Bladefall procs Wrapped in Flame and life on hit\nFrost Bomb reduces enemy life regeneration by 75%'
+      },
+      {
+        faqId: 'FAQ056',
+        q: 'Where do we get ignite chance from?',
+        a: 'Sources:\n- Ignite tattoos\n- Blowback cluster node\n- Rare jewel suffix\n- Early flask suffix if needed'
+      },
+      {
+        faqId: 'FAQ059',
+        q: 'How to deal with reflect?',
+        a: 'Hinekora pops cannot be reflected. Keep non-DD / non-Unearth gems low level.'
+      },
+      {
+        faqId: 'FAQ038',
+        q: 'What are alternative gems for the 6-link?',
+        a: 'Refer to guide'
+      },
+    ]
+  },
+  {
+    id: 'mapping',
+    name: 'Mapping & Atlas',
+    questions: [
+      {
+        faqId: 'FAQ025',
+        q: 'What league mechanics are good for the build?',
+        a: 'Good mechanics:\n- Ultimatum\n- Expedition\n- Harbingers\n- Ritual\n- Beyond\n- Simulacrum (with good gear)'
+      },
+      {
+        faqId: 'FAQ028',
+        q: 'What map mods do I avoid early mapping?',
+        a: 'Avoid:\n- No regen\n- Minus max res\n- Any 2+ damage mod combination'
+      },
+      {
+        faqId: 'FAQ029',
+        q: 'What map mods do I avoid late game T16 mapping?',
+        a: 'Refer to doc'
+      },
+      {
+        faqId: 'FAQ030',
+        q: 'What map mods do I avoid late game T17 mapping?',
+        a: 'Refer to doc'
+      },
+      {
+        faqId: 'FAQ046',
+        q: 'If I run Ultimatum strat, how do I sustain maps?',
+        a: 'You don\'t. You must buy them.'
+      },
+      {
+        faqId: 'FAQ047',
+        q: 'Do map mods affect Ultimatum rewards?',
+        a: 'They affect catalyst quantity and post-Ultimatum loot, not offered rewards.'
+      },
+      {
+        faqId: 'FAQ048',
+        q: 'What map to run (< T17)?',
+        a: 'Any map you can navigate comfortably'
+      },
+      {
+        faqId: 'FAQ049',
+        q: 'What map to run (T17)?',
+        a: 'Abomination'
+      },
+    ]
+  },
+  {
+    id: 'ultimatum',
+    name: 'Ultimatum Strategy',
+    questions: [
+      {
+        faqId: 'FAQ026',
+        q: 'What\'s the difference between T7 / T10 / T16 / T17 Ultimatum?',
+        a: 'Range, quality, and quantity change. Exact numbers unknown.'
+      },
+      {
+        faqId: 'FAQ027',
+        q: 'What Ultimatum mods do I run / avoid?',
+        a: 'Refer to doc'
       },
     ]
   },
   {
     id: 'endgame',
-    name: 'Endgame & Scaling',
-    icon: '★',
+    name: 'Endgame & Bossing',
     questions: [
       {
-        q: 'What content can this build do?',
-        a: '[Answer will be added - content capabilities]'
+        faqId: 'FAQ011',
+        q: 'What is the minimum gear/level needed for Wave 10/15 Simulacrum?',
+        a: 'Refer to doc'
       },
       {
-        q: 'Is this build hardcore viable?',
-        a: '[Answer will be added - HC viability assessment]'
+        faqId: 'FAQ012',
+        q: 'How do I maximize my single target damage?',
+        a: 'Tips:\n- 100% generic ignite chance\n- Spam Penance Mark\n- Use Vaal Breach\n- Scale AoE so more explosions hit the boss'
       },
       {
-        q: 'How do I scale damage in endgame?',
-        a: '[Answer will be added - damage scaling strategies]'
+        faqId: 'FAQ034',
+        q: 'Are there good Mercenary setups for the build?',
+        a: 'No. Mercenaries die often and provide no worthwhile value.'
       },
       {
-        q: 'What are the upgrade priorities?',
-        a: '[Answer will be added - upgrade path recommendations]'
+        faqId: 'FAQ036',
+        q: 'Is it worth running Animate Guardian?',
+        a: 'No. AG dies often and steals aggro, reducing triggers.'
+      },
+      {
+        faqId: 'FAQ041',
+        q: 'Can I do T17s?',
+        a: 'Depends; refer to progression guide'
+      },
+      {
+        faqId: 'FAQ050',
+        q: 'How to kill Abomination boss?',
+        a: 'Kill order:\n1) Kill Maligaro first\n2) Then Shavronne\n3) Doedre last\n\nNote: Doedre early creates damage-reducing pillars'
+      },
+      {
+        faqId: 'FAQ053',
+        q: 'Can you farm Valdo maps with Chieftain?',
+        a: 'Some easy ones, but it is not recommended. PF CWS works better but is expensive.'
+      },
+      {
+        faqId: 'FAQ057',
+        q: 'When should I swap to the Svalinn / block version?',
+        a: 'Only for extreme gauntlet-style atlas content'
+      },
+      {
+        faqId: 'FAQ060',
+        q: 'How to kill Kosis if he is alone?',
+        a: 'Strategy:\n- Kite into packs\n- Prolif ignites\n- Refresh with Penance Mark\n- Fish for Hinekora pop if AoE allows'
+      },
+      {
+        faqId: 'FAQ061',
+        q: 'How to get more damage?',
+        a: 'Damage scaling:\n- Scale gem levels and quality\n- Use awakened gems\n- Jewels with 3 damage mods\n- AoE clusters'
+      },
+    ]
+  },
+  {
+    id: 'progression',
+    name: 'Progression & Upgrades',
+    questions: [
+      {
+        faqId: 'FAQ009',
+        q: 'Where is PoB for Ruin?',
+        a: 'Updated on the Google sheet in the CWS 2.0 page'
+      },
+      {
+        faqId: 'FAQ015',
+        q: 'What Pantheons are best for this build and why?',
+        a: 'Major: Lunaris + 6% reduced elemental damage taken\nMinor: Upgraded Tukohama'
+      },
+      {
+        faqId: 'FAQ043',
+        q: 'What was buffed / nerfed in 3.26?',
+        a: 'Flasks triggering in Trialmaster fight (major buff)'
+      },
+      {
+        faqId: 'FAQ058',
+        q: 'What\'s my next build upgrade?',
+        a: 'Refer to build sheets and PoBs. Choose based on content goals.'
+      },
+    ]
+  },
+  {
+    id: 'troubleshooting',
+    name: 'Troubleshooting',
+    questions: [
+      {
+        faqId: 'FAQ035',
+        q: 'Why do I die? (Checklist)',
+        a: 'Checklist:\n- 6.5k+ total life\n- Chaos res capped\n- 90% elemental res\n- Auras active\n- 55%+ unreserved life\n- Avoid stacking damage mods\n- Read Ultimatum mods\n- Correct pantheon\n- Correct tree'
       },
     ]
   },
   {
     id: 'community',
     name: 'Community & Resources',
-    icon: '♦',
     questions: [
       {
+        faqId: 'FAQ-SOCIAL',
         q: "Where can I find Emiracles' streams?",
         a: 'social-links' // Special flag to render social links
       },
       {
+        faqId: 'FAQ-DISCORD',
         q: 'Is there a Discord community?',
-        a: '[Answer will be added - Discord invite info]'
+        a: 'Yes! Join the community Discord to ask questions, share builds, and connect with other CWS players.'
       },
       {
+        faqId: 'FAQ-ASK',
         q: 'Where can I ask questions about the build?',
-        a: '[Answer will be added - community resources]'
+        a: 'Use the Discord community or Twitch chat during streams. Remember to search first - most questions have already been answered!'
       },
     ]
   },
@@ -141,7 +404,6 @@ const faqCategories = [
             class="category-tab animate-fade-in-up"
             style={`animation-delay: ${index * 50}ms`}
           >
-            <span class="category-icon">{category.icon}</span>
             <span class="category-name">{category.name}</span>
           </a>
         ))}
@@ -155,13 +417,12 @@ const faqCategories = [
       {faqCategories.map((category, catIndex) => (
         <div id={category.id} class="faq-category animate-fade-in-up" style={`animation-delay: ${catIndex * 100}ms`}>
           <h2 class="category-title">
-            <span class="category-icon-large">{category.icon}</span>
             {category.name}
           </h2>
 
           <div class="faq-list">
             {category.questions.map((faq, qIndex) => (
-              <details class="faq-item">
+              <details class="faq-item" id={faq.faqId}>
                 <summary class="faq-question">
                   <span class="question-text">{faq.q}</span>
                   <span class="question-toggle"></span>
@@ -179,7 +440,7 @@ const faqCategories = [
                       />
                     </div>
                   ) : (
-                    <p class="placeholder-text">{faq.a}</p>
+                    <p class="answer-text">{faq.a}</p>
                   )}
                 </div>
               </details>
@@ -258,10 +519,6 @@ const faqCategories = [
     transform: translateY(-2px);
   }
 
-  .category-icon {
-    font-size: 1.1rem;
-  }
-
   /* FAQ Categories */
   .faq-category {
     margin-bottom: var(--spacing-xl);
@@ -276,11 +533,6 @@ const faqCategories = [
     padding-bottom: var(--spacing-md);
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text);
-  }
-
-  .category-icon-large {
-    font-size: 1.5rem;
-    color: var(--color-accent);
   }
 
   /* FAQ Items */
@@ -387,9 +639,9 @@ const faqCategories = [
     background: rgba(0, 0, 0, 0.2);
   }
 
-  .placeholder-text {
-    color: var(--color-text-subtle);
-    font-style: italic;
+  .answer-text {
+    white-space: pre-line;
+    margin: 0;
   }
 
   .social-answer {
@@ -436,14 +688,6 @@ const faqCategories = [
       font-size: 0.85rem;
     }
 
-    .category-name {
-      display: none;
-    }
-
-    .category-icon {
-      font-size: 1.25rem;
-    }
-
     .faq-question {
       padding: var(--spacing-md);
     }
@@ -468,4 +712,25 @@ const faqCategories = [
       }
     });
   });
+
+  // Handle direct FAQ links (e.g., /faq#FAQ001)
+  function scrollToFaq() {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#FAQ')) {
+      const faqItem = document.querySelector(hash);
+      if (faqItem) {
+        const navHeight = document.querySelector('.faq-nav')?.offsetHeight || 0;
+        const targetPosition = faqItem.getBoundingClientRect().top + window.scrollY - navHeight - 20;
+        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+        // Open the FAQ item
+        if (faqItem instanceof HTMLDetailsElement) {
+          faqItem.open = true;
+        }
+      }
+    }
+  }
+
+  // Run on load and hash change
+  window.addEventListener('load', scrollToFaq);
+  window.addEventListener('hashchange', scrollToFaq);
 </script>

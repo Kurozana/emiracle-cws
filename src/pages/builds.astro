@@ -9,7 +9,7 @@ const base = baseRaw.endsWith('/') ? baseRaw : `${baseRaw}/`;
 const { loadouts, skills } = skillsData;
 ---
 
-<BaseLayout title="Skill Gems">
+<BaseLayout title="Builds">
   <Navigation slot="header" />
 
   <!-- Loadout-themed background overlay -->
@@ -17,14 +17,14 @@ const { loadouts, skills } = skillsData;
 
   <section class="page-header">
     <div class="container">
-      <h1>Skill Gems</h1>
+      <h1>Builds</h1>
       <p class="text-muted">
-        Gem links, support priorities, and alternative setups
+        Skill setups, passive trees, and gear configurations
       </p>
     </div>
   </section>
 
-  <section class="skills-content section">
+  <section class="builds-content section">
     <div class="container">
 
       <!-- Loadout Selector -->
@@ -66,7 +66,20 @@ const { loadouts, skills } = skillsData;
             </a>
           </div>
         </div>
+
+        <!-- Internal Tabs: Skill & Passive Tree / Gear -->
+        <div class="content-tabs">
+          <button class="content-tab content-tab--active" data-tab="skills">
+            Skill & Passive Tree
+          </button>
+          <button class="content-tab" data-tab="gear">
+            Gear
+          </button>
+        </div>
       </div>
+
+      <!-- TAB: Skill & Passive Tree -->
+      <div id="tab-content-skills" class="tab-content tab-content--active">
 
       <!-- Passive Skill Tree Box -->
       <div class="passive-tree-box" id="passive-tree-box">
@@ -86,6 +99,16 @@ const { loadouts, skills } = skillsData;
       <div id="skill-setups-container">
         <!-- Skill setups will be dynamically rendered here -->
       </div>
+
+      </div><!-- END TAB: Skill & Passive Tree -->
+
+      <!-- TAB: Gear -->
+      <div id="tab-content-gear" class="tab-content">
+        <div id="gear-container">
+          <!-- Gear grid will be dynamically rendered here -->
+          <p class="text-muted">Gear configuration for this progression will appear here.</p>
+        </div>
+      </div><!-- END TAB: Gear -->
 
     </div>
   </section>
@@ -364,8 +387,49 @@ const { loadouts, skills } = skillsData;
     margin-bottom: var(--spacing-sm);
   }
 
-  .skills-content {
+  .builds-content {
     padding-bottom: var(--spacing-xl);
+  }
+
+  /* Internal Content Tabs */
+  .content-tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .content-tab {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .content-tab:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  .content-tab--active {
+    background: var(--color-accent-glow);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  /* Tab Content */
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content--active {
+    display: block;
   }
 
   /* Skill section styles for dynamically generated content */
@@ -672,6 +736,231 @@ const { loadouts, skills } = skillsData;
     border-top-color: var(--color-border);
   }
   /* END EXPERIMENTAL FEATURE */
+
+  /* ============================================
+     GEAR GRID STYLES
+     PoE-style inventory grid with hover tooltips
+     ============================================ */
+
+  :global(.gear-grid__inventory) {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(9, 60px);
+    grid-template-areas:
+      "Weapon Weapon . Helm Helm . Offhand Offhand"
+      "Weapon Weapon . Helm Helm . Offhand Offhand"
+      "Weapon Weapon . BodyArmour BodyArmour Amulet Offhand Offhand"
+      "Weapon Weapon RingL BodyArmour BodyArmour RingR Offhand Offhand"
+      ". Gloves Gloves BodyArmour BodyArmour Boots Boots ."
+      ". Gloves Gloves Belt Belt Boots Boots ."
+      ". flasks flasks flasks flasks flasks flasks ."
+      ". flasks flasks flasks flasks flasks flasks ."
+      ". . Jewel1 Jewel2 Jewel3 Jewel4 . .";
+    gap: 4px;
+    justify-content: center;
+    background: var(--color-card-bg);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-border);
+    margin-top: var(--spacing-lg);
+  }
+
+  :global(.gear-grid__item) {
+    position: relative;
+    background: var(--color-bg-secondary);
+    border: 1px solid #444;
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  :global(.gear-grid__item:hover) {
+    border-color: #888;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  }
+
+  :global(.gear-grid__item-image) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+  }
+
+  :global(.gear-grid__item-placeholder) {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-subtle);
+    font-size: 0.65rem;
+    text-align: center;
+    padding: 4px;
+  }
+
+  /* Rarity border colors */
+  :global(.gear-grid__item--normal) { border-color: #c8c8c8; }
+  :global(.gear-grid__item--magic) { border-color: #8888ff; }
+  :global(.gear-grid__item--rare) { border-color: #ffff77; }
+  :global(.gear-grid__item--unique) { border-color: #af6025; }
+
+  /* Hover glow by rarity */
+  :global(.gear-grid__item--normal:hover) { box-shadow: 0 0 10px rgba(200, 200, 200, 0.4); }
+  :global(.gear-grid__item--magic:hover) { box-shadow: 0 0 10px rgba(136, 136, 255, 0.5); }
+  :global(.gear-grid__item--rare:hover) { box-shadow: 0 0 10px rgba(255, 255, 119, 0.5); }
+  :global(.gear-grid__item--unique:hover) { box-shadow: 0 0 10px rgba(175, 96, 37, 0.6); }
+
+  /* Tooltip */
+  :global(.gear-grid__tooltip) {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    min-width: 280px;
+    max-width: 350px;
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 0;
+    margin-top: 8px;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  }
+
+  :global(.gear-grid__item:hover .gear-grid__tooltip) {
+    display: block;
+  }
+
+  :global(.gear-grid__tooltip-header) {
+    display: flex;
+    align-items: stretch;
+    height: 47px;
+  }
+
+  :global(.gear-grid__tooltip-header-left) {
+    width: 29px;
+    height: 47px;
+    flex-shrink: 0;
+    background-repeat: no-repeat;
+    background-position: left top;
+    background-size: auto 47px;
+  }
+
+  :global(.gear-grid__tooltip-header-middle) {
+    flex: 1;
+    min-width: 0;
+    height: 47px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 8px;
+    background-repeat: repeat-x;
+    background-position: left top;
+    background-size: auto 47px;
+  }
+
+  :global(.gear-grid__tooltip-header-right) {
+    width: 29px;
+    height: 47px;
+    flex-shrink: 0;
+    background-repeat: no-repeat;
+    background-position: right top;
+    background-size: auto 47px;
+  }
+
+  :global(.gear-grid__tooltip-name) {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 2px;
+  }
+
+  :global(.gear-grid__tooltip-base) {
+    display: block;
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+
+  /* Rarity text colors */
+  :global(.gear-grid__tooltip--normal .gear-grid__tooltip-header-middle) { color: #c8c8c8; }
+  :global(.gear-grid__tooltip--magic .gear-grid__tooltip-header-middle) { color: #8888ff; }
+  :global(.gear-grid__tooltip--rare .gear-grid__tooltip-header-middle) { color: #ffff77; }
+  :global(.gear-grid__tooltip--unique .gear-grid__tooltip-header-middle) { color: #af6025; }
+
+  :global(.gear-grid__tooltip-body) {
+    padding: 10px 12px;
+  }
+
+  :global(.gear-grid__tooltip-quality) {
+    color: #8888ff;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+  }
+
+  :global(.gear-grid__tooltip-implicits) {
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #333;
+  }
+
+  :global(.gear-grid__tooltip-mod) {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 2px;
+  }
+
+  :global(.gear-grid__tooltip-mod--implicit) { color: #8888ff; }
+  :global(.gear-grid__tooltip-mod--explicit) { color: #8888ff; }
+
+  :global(.gear-grid__tooltip-flavor) {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #333;
+    color: #af6025;
+    font-style: italic;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    white-space: pre-line;
+  }
+
+  :global(.gear-grid__flasks) {
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px dashed #444;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.gear-grid__flasks-label) {
+    color: var(--color-text-subtle);
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 600px) {
+    :global(.gear-grid__inventory) {
+      grid-template-columns: repeat(8, 45px);
+      grid-template-rows: repeat(9, 45px);
+      padding: var(--spacing-md);
+    }
+
+    :global(.gear-grid__tooltip) {
+      min-width: 220px;
+      max-width: 280px;
+      font-size: 0.9em;
+    }
+
+    :global(.gear-grid__item-placeholder) {
+      font-size: 0.5rem;
+    }
+  }
 </style>
 
 <script define:vars={{ loadouts, skills, base }}>
@@ -726,6 +1015,151 @@ const { loadouts, skills } = skillsData;
     blue: '#4169e1',   // Intelligence gems
     white: '#e0e0e0',  // Support gems
   };
+
+  // Header asset paths by rarity for gear tooltips
+  const gearHeaderAssets = {
+    normal: {
+      left: `${base}Gear/ItemsHeaderNormalLeft.webp`,
+      middle: `${base}Gear/ItemsHeaderNormalMiddle.webp`,
+      right: `${base}Gear/ItemsHeaderNormalRight.webp`,
+    },
+    magic: {
+      left: `${base}Gear/ItemsHeaderMagicLeft.webp`,
+      middle: `${base}Gear/ItemsHeaderMagicMiddle.webp`,
+      right: `${base}Gear/ItemsHeaderMagicRight.webp`,
+    },
+    rare: {
+      left: `${base}Gear/ItemsHeaderRareLeft.webp`,
+      middle: `${base}Gear/ItemsHeaderRareMiddle.webp`,
+      right: `${base}Gear/ItemsHeaderRareRight.webp`,
+    },
+    unique: {
+      left: `${base}Gear/ItemsHeaderUniqueLeft.webp`,
+      middle: `${base}Gear/ItemsHeaderUniqueMiddle.webp`,
+      right: `${base}Gear/ItemsHeaderUniqueRight.webp`,
+    },
+  };
+
+  // Render a single gear item
+  function renderGearItem(item) {
+    const header = gearHeaderAssets[item.rarity] || gearHeaderAssets.normal;
+    const imageUrl = item.image ? `${base}${item.image}` : '';
+
+    // Quality line
+    const qualityHtml = item.quality && item.quality > 0
+      ? `<p class="gear-grid__tooltip-quality">Quality: +${item.quality}%</p>`
+      : '';
+
+    // Implicit mods
+    const implicitsHtml = item.implicitMods && item.implicitMods.length > 0
+      ? `<div class="gear-grid__tooltip-implicits">
+           ${item.implicitMods.map(mod => `<p class="gear-grid__tooltip-mod gear-grid__tooltip-mod--implicit">${mod}</p>`).join('')}
+         </div>`
+      : '';
+
+    // Explicit mods
+    const explicitsHtml = item.explicitMods && item.explicitMods.length > 0
+      ? `<div class="gear-grid__tooltip-explicits">
+           ${item.explicitMods.map(mod => `<p class="gear-grid__tooltip-mod gear-grid__tooltip-mod--explicit">${mod}</p>`).join('')}
+         </div>`
+      : '';
+
+    // Flavor text (unique only)
+    const flavorHtml = item.rarity === 'unique' && item.flavorText
+      ? `<p class="gear-grid__tooltip-flavor">${item.flavorText}</p>`
+      : '';
+
+    return `
+      <div class="gear-grid__item gear-grid__item--${item.rarity}" style="grid-area: ${item.gridArea};" data-item-id="${item.id}">
+        ${imageUrl
+          ? `<img class="gear-grid__item-image" src="${imageUrl}" alt="${item.name}" loading="lazy" />`
+          : `<div class="gear-grid__item-placeholder"><span>${item.gridArea}</span></div>`
+        }
+        <div class="gear-grid__tooltip gear-grid__tooltip--${item.rarity}">
+          <div class="gear-grid__tooltip-header">
+            <div class="gear-grid__tooltip-header-left" style="background-image: url('${header.left}');"></div>
+            <div class="gear-grid__tooltip-header-middle" style="background-image: url('${header.middle}');">
+              <span class="gear-grid__tooltip-name">${item.name}</span>
+              <span class="gear-grid__tooltip-base">${item.baseType}</span>
+            </div>
+            <div class="gear-grid__tooltip-header-right" style="background-image: url('${header.right}');"></div>
+          </div>
+          <div class="gear-grid__tooltip-body">
+            ${qualityHtml}
+            ${implicitsHtml}
+            ${explicitsHtml}
+            ${flavorHtml}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // All gear slot definitions (must always render)
+  const gearSlots = [
+    { gridArea: 'Weapon', label: 'Weapon' },
+    { gridArea: 'Offhand', label: 'Offhand' },
+    { gridArea: 'Helm', label: 'Helm' },
+    { gridArea: 'BodyArmour', label: 'Body' },
+    { gridArea: 'Gloves', label: 'Gloves' },
+    { gridArea: 'Boots', label: 'Boots' },
+    { gridArea: 'Belt', label: 'Belt' },
+    { gridArea: 'Amulet', label: 'Amulet' },
+    { gridArea: 'RingL', label: 'Ring' },
+    { gridArea: 'RingR', label: 'Ring' },
+    { gridArea: 'Jewel1', label: 'Jewel' },
+    { gridArea: 'Jewel2', label: 'Jewel' },
+    { gridArea: 'Jewel3', label: 'Jewel' },
+    { gridArea: 'Jewel4', label: 'Jewel' },
+  ];
+
+  // Render an empty gear slot (placeholder only, no tooltip)
+  function renderEmptySlot(slot) {
+    return `
+      <div class="gear-grid__item" style="grid-area: ${slot.gridArea};">
+        <div class="gear-grid__item-placeholder"><span>${slot.label}</span></div>
+      </div>
+    `;
+  }
+
+  // Render gear grid for the current loadout and progression
+  function renderGearGrid(loadoutKey, progressionKey) {
+    const container = document.getElementById('gear-container');
+    if (!container) return;
+
+    const loadout = loadouts[loadoutKey];
+    const progression = loadout?.progressions?.[progressionKey];
+    const gearItems = progression?.gear || [];
+
+    // Create a map of gridArea -> item for quick lookup
+    const gearMap = {};
+    gearItems.forEach(item => {
+      gearMap[item.gridArea] = item;
+    });
+
+    // Render the gear grid
+    let html = '<div class="gear-grid__inventory">';
+
+    // Always render all slots
+    gearSlots.forEach(slot => {
+      const item = gearMap[slot.gridArea];
+      if (item) {
+        html += renderGearItem(item);
+      } else {
+        html += renderEmptySlot(slot);
+      }
+    });
+
+    // Add flask placeholder
+    html += `
+      <div class="gear-grid__flasks" style="grid-area: flasks;">
+        <span class="gear-grid__flasks-label">Flasks</span>
+      </div>
+    `;
+
+    html += '</div>';
+    container.innerHTML = html;
+  }
 
   // Update loadout-themed page background
   function updateLoadoutBackground(loadoutKey) {
@@ -890,6 +1324,9 @@ const { loadouts, skills } = skillsData;
     renderSkillSetups(currentLoadout, currentProgression);
     updatePassiveTreeBox(currentLoadout, currentProgression);
     updatePobLink(currentLoadout, currentProgression);
+
+    // Reset to Skills tab when progression changes
+    resetToSkillsTab();
   }
 
   // Update PoB link based on current loadout and progression
@@ -984,6 +1421,50 @@ const { loadouts, skills } = skillsData;
     });
   }
 
+  // Handle content tab switching (Skill & Passive Tree / Gear)
+  function initContentTabs() {
+    const contentTabs = document.querySelectorAll('.content-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    contentTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetTab = tab.getAttribute('data-tab');
+
+        // Update active tab
+        contentTabs.forEach(t => t.classList.remove('content-tab--active'));
+        tab.classList.add('content-tab--active');
+
+        // Show corresponding content
+        tabContents.forEach(content => {
+          content.classList.remove('tab-content--active');
+          if (content.id === `tab-content-${targetTab}`) {
+            content.classList.add('tab-content--active');
+          }
+        });
+
+        // Render gear grid when Gear tab is activated
+        if (targetTab === 'gear') {
+          renderGearGrid(currentLoadout, currentProgression);
+        }
+      });
+    });
+  }
+
+  // Reset to Skills tab (called when progression changes)
+  function resetToSkillsTab() {
+    const skillsTab = document.querySelector('.content-tab[data-tab="skills"]');
+    const gearTab = document.querySelector('.content-tab[data-tab="gear"]');
+    const skillsContent = document.getElementById('tab-content-skills');
+    const gearContent = document.getElementById('tab-content-gear');
+
+    if (skillsTab && gearTab && skillsContent && gearContent) {
+      skillsTab.classList.add('content-tab--active');
+      gearTab.classList.remove('content-tab--active');
+      skillsContent.classList.add('tab-content--active');
+      gearContent.classList.remove('tab-content--active');
+    }
+  }
+
   // Initialize the loadout system
   function initLoadoutSystem() {
     const tabs = document.querySelectorAll('.loadout-tab');
@@ -1032,6 +1513,9 @@ const { loadouts, skills } = skillsData;
     if (copyBtn) {
       copyBtn.addEventListener('click', handleCopyTreeData);
     }
+
+    // Initialize content tabs (Skill & Passive Tree / Gear)
+    initContentTabs();
 
     // Add loadout tab click handlers
     tabs.forEach(tab => {
