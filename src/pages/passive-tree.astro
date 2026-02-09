@@ -1,0 +1,968 @@
+---
+/**
+ * PASSIVE TREE VIEWER
+ *
+ * Read-only viewer for pre-allocated passive trees.
+ * Renders the PoE passive tree with allocated nodes highlighted.
+ *
+ * Rules:
+ * - All styles scoped with 'pt-' prefix
+ * - No global CSS additions
+ * - Vanilla JS only
+ * - Canvas-based rendering using texture atlases
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+---
+
+<BaseLayout title="Passive Tree">
+  <Navigation slot="header" />
+
+  <section class="pt-page">
+    <div class="pt-container">
+
+      <!-- Tree Viewer Widget -->
+      <div class="pt-widget">
+
+        <!-- Header -->
+        <div class="pt-header">
+          <span class="pt-title">Passive Skill Tree</span>
+          <div class="pt-controls">
+            <span class="pt-zoom-label">Zoom: <span id="pt-zoom-value">100%</span></span>
+            <button class="pt-btn" id="pt-reset-btn" title="Reset View">⟲</button>
+          </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="pt-viewer" id="pt-viewer">
+          <canvas id="pt-canvas"></canvas>
+
+          <!-- Loading Overlay -->
+          <div class="pt-loading" id="pt-loading">
+            <div class="pt-spinner"></div>
+            <span>Loading passive tree...</span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="pt-footer">
+          <span class="pt-stat" id="pt-stat-points">Points: 0 / 123</span>
+          <span class="pt-stat" id="pt-stat-ascendancy">Ascendancy: 0 / 8</span>
+        </div>
+
+      </div>
+
+      <!-- Debug Panel (dev only) -->
+      <div class="pt-debug" id="pt-debug">
+        <p>Pan: <span id="pt-debug-pan">(0, 0)</span> | Zoom: <span id="pt-debug-zoom">0.05</span></p>
+        <p>Nodes: <span id="pt-debug-nodes">0</span> | Allocated: <span id="pt-debug-allocated">0</span></p>
+      </div>
+
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ============================================
+     PASSIVE TREE VIEWER - SCOPED STYLES
+     All classes prefixed with 'pt-'
+     ============================================ */
+
+  .pt-page {
+    min-height: calc(100vh - 60px);
+    background: #0a0a0f;
+    padding: 1rem;
+  }
+
+  .pt-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Widget Container */
+  .pt-widget {
+    background: #0d0d14;
+    border: 1px solid #1a1a25;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .pt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #101018;
+    border-bottom: 1px solid #1a1a25;
+  }
+
+  .pt-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c8b07a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .pt-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .pt-zoom-label {
+    font-size: 0.75rem;
+    color: #606070;
+  }
+
+  .pt-btn {
+    background: #1a1a24;
+    border: 1px solid #2a2a35;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    color: #808090;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+  }
+
+  .pt-btn:hover {
+    background: #252530;
+    color: #c8b07a;
+  }
+
+  /* Canvas Viewer */
+  .pt-viewer {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background: #05050a;
+    cursor: grab;
+  }
+
+  .pt-viewer:active {
+    cursor: grabbing;
+  }
+
+  #pt-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Loading Overlay */
+  .pt-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: rgba(5, 5, 10, 0.9);
+    color: #606070;
+    font-size: 0.9rem;
+  }
+
+  .pt-loading.hidden {
+    display: none;
+  }
+
+  .pt-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #1a1a25;
+    border-top-color: #c8b07a;
+    border-radius: 50%;
+    animation: pt-spin 1s linear infinite;
+  }
+
+  @keyframes pt-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Footer */
+  .pt-footer {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.6rem 1rem;
+    background: #101018;
+    border-top: 1px solid #1a1a25;
+  }
+
+  .pt-stat {
+    font-size: 0.75rem;
+    color: #606070;
+  }
+
+  /* Debug Panel */
+  .pt-debug {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #0a0a10;
+    border: 1px dashed #1a1a25;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #404050;
+  }
+
+  .pt-debug p {
+    margin: 0.25rem 0;
+  }
+</style>
+
+<script>
+  /**
+   * PASSIVE TREE VIEWER
+   *
+   * Renders the Path of Exile passive tree using canvas and texture atlases.
+   *
+   * Data sources:
+   * - /data/tree.json - Full tree structure (nodes, groups, sprites)
+   * - /data/assets/*.png/jpg - Texture atlases
+   * - /data/trees/*.json - Allocated node configurations
+   *
+   * Rendering layers (back to front):
+   * 1. Tiled background
+   * 2. Group backgrounds (cluster decorations)
+   * 3. Connection lines
+   * 4. Node frames
+   * 5. Node icons
+   */
+  (function() {
+    'use strict';
+
+    // ==========================================
+    // CONFIGURATION
+    // ==========================================
+    const BASE_URL = import.meta.env.BASE_URL || '/';
+    const SPRITE_ZOOM = '0.3835';  // Highest quality zoom level
+
+    // Ascendancy position offsets to prevent overlapping
+    const ASCENDANCY_OFFSETS: Record<string, { x: number; y: number }> = {
+      'Inquisitor': { x: 0, y: 350 },   // Move down (away from Hierophant)
+      'Juggernaut': { x: 0, y: 350 },   // Move down (away from Berserker)
+    };
+
+    // ==========================================
+    // DOM ELEMENTS
+    // ==========================================
+    const viewer = document.getElementById('pt-viewer');
+    const canvas = /** @type {HTMLCanvasElement} */ (document.getElementById('pt-canvas'));
+    const loading = document.getElementById('pt-loading');
+    const debugPan = document.getElementById('pt-debug-pan');
+    const debugZoom = document.getElementById('pt-debug-zoom');
+    const debugNodes = document.getElementById('pt-debug-nodes');
+    const debugAllocated = document.getElementById('pt-debug-allocated');
+    const zoomValue = document.getElementById('pt-zoom-value');
+    const resetBtn = document.getElementById('pt-reset-btn');
+
+    if (!viewer || !canvas) {
+      console.error('[PT] Required elements not found');
+      return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      console.error('[PT] Could not get canvas context');
+      return;
+    }
+
+    // Enable image smoothing for better quality
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // ==========================================
+    // STATE
+    // ==========================================
+    /** @type {any} */
+    let treeData = null;
+
+    /** @type {Map<string, {x: number, y: number, node: any}>} */
+    let nodePositions = new Map();
+
+    /** @type {Set<string>} */
+    let allocatedNodes = new Set();
+
+    // Pre-computed group classifications (populated once during processNodes)
+    /** @type {Set<string>} */
+    let masteryGroups = new Set();
+    /** @type {Set<string>} */
+    let ascendancyGroups = new Set();
+
+    /** @type {Record<string, HTMLImageElement>} */
+    const atlases = {};
+
+    // View state
+    let panX = 0;
+    let panY = 0;
+    let zoom = 0.05;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    // Tree bounds
+    let bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+
+    // ==========================================
+    // DATA LOADING
+    // ==========================================
+    async function loadTreeData() {
+      showLoading(true);
+
+      try {
+        // Load tree structure
+        console.log('[PT] Loading tree data...');
+        const treeUrl = `${BASE_URL}data/tree.json`;
+        const response = await fetch(treeUrl);
+        if (!response.ok) throw new Error(`Failed to load tree.json: ${response.status}`);
+        treeData = await response.json();
+
+        // Extract bounds
+        bounds = {
+          minX: treeData.min_x,
+          maxX: treeData.max_x,
+          minY: treeData.min_y,
+          maxY: treeData.max_y
+        };
+
+        console.log('[PT] Tree loaded:', {
+          nodes: Object.keys(treeData.nodes).length,
+          groups: Object.keys(treeData.groups).length,
+          bounds
+        });
+
+        // Load texture atlases
+        await loadAtlases();
+
+        // Process node positions
+        processNodes();
+
+        // Initial render
+        centerView();
+        render();
+
+      } catch (err) {
+        console.error('[PT] Load error:', err);
+        showError(String(err));
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function loadAtlases() {
+      console.log('[PT] Loading texture atlases...');
+
+      const atlasFiles = {
+        'skills': 'data/assets/skills-3.jpg',
+        'skills-disabled': 'data/assets/skills-disabled-3.jpg',
+        'frame': 'data/assets/frame-3.png',
+        'mastery': 'data/assets/mastery-3.png',
+        'mastery-connected': 'data/assets/mastery-connected-3.png',
+        'mastery-disabled': 'data/assets/mastery-disabled-3.png',
+        'group-background': 'data/assets/group-background-3.png',
+        'background': 'data/assets/background-3.png',
+        'ascendancy': 'data/assets/ascendancy-3.webp',
+        'jewel': 'data/assets/jewel-3.png',
+        'line': 'data/assets/line-3.png',
+        // Individual group background images
+        'bg-small': 'data/assets/backgrounds/GroupBackgroundSmallAlt.png',
+        'bg-medium': 'data/assets/backgrounds/GroupBackgroundMediumAlt.png',
+        'bg-half': 'data/assets/backgrounds/GroupBackgroundLargeHalfAlt.png',
+        // PSGroupBackground for wheels and masteries
+        'PSGroupBackground1': 'data/assets/backgrounds/PSGroupBackground1.png',
+        'PSGroupBackground2': 'data/assets/backgrounds/PSGroupBackground2.png',
+        'PSGroupBackground3': 'data/assets/backgrounds/PSGroupBackground3.png',
+      };
+
+      const loadPromises = Object.entries(atlasFiles).map(([name, path]) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            atlases[name] = img;
+            console.log(`[PT] Loaded atlas: ${name}`);
+            resolve(true);
+          };
+          img.onerror = () => {
+            console.warn(`[PT] Failed to load atlas: ${name}`);
+            resolve(false);
+          };
+          img.src = `${BASE_URL}${path}`;
+        });
+      });
+
+      await Promise.all(loadPromises);
+      console.log(`[PT] Atlases loaded: ${Object.keys(atlases).length}`);
+    }
+
+    // ==========================================
+    // NODE PROCESSING
+    // ==========================================
+    function processNodes() {
+      if (!treeData) return;
+
+      const { nodes, groups, constants } = treeData;
+      const { orbitRadii, skillsPerOrbit } = constants;
+
+      nodePositions.clear();
+      masteryGroups.clear();
+      ascendancyGroups.clear();
+      let skippedProxy = 0;
+
+      for (const [nodeId, node] of Object.entries(nodes)) {
+        // Skip nodes without a group
+        if (node.group === undefined) continue;
+
+        const group = groups[node.group];
+        if (!group) continue;
+
+        // Skip cluster jewel proxy nodes and groups
+        if (node.isProxy || group.isProxy) {
+          skippedProxy++;
+          continue;
+        }
+
+        // Cache group classifications (done once, used during rendering)
+        const groupId = String((node as any).group);
+        if ((node as any).isMastery) masteryGroups.add(groupId);
+        if ((node as any).ascendancyName) ascendancyGroups.add(groupId);
+
+        // Calculate position from group center + orbit
+        const orbit = node.orbit ?? 0;
+        const orbitIndex = node.orbitIndex ?? 0;
+        const radius = orbitRadii[orbit] ?? 0;
+        const skillCount = skillsPerOrbit[orbit] ?? 1;
+
+        // Angle in radians (nodes distributed evenly around orbit)
+        const angle = (2 * Math.PI * orbitIndex) / skillCount;
+
+        // Position (PoE uses Y-up, canvas uses Y-down)
+        let x = group.x + radius * Math.sin(angle);
+        let y = group.y - radius * Math.cos(angle);
+
+        // Apply ascendancy offset if this node belongs to an adjusted ascendancy
+        const ascName = (node as any).ascendancyName as string | undefined;
+        if (ascName && ASCENDANCY_OFFSETS[ascName]) {
+          x += ASCENDANCY_OFFSETS[ascName].x;
+          y += ASCENDANCY_OFFSETS[ascName].y;
+        }
+
+        nodePositions.set(nodeId, { x, y, node });
+      }
+
+      console.log(`[PT] Processed ${nodePositions.size} nodes (skipped ${skippedProxy} proxy/cluster nodes)`);
+      updateDebug();
+    }
+
+    // ==========================================
+    // RENDERING
+    // ==========================================
+    function render() {
+      if (!ctx || !canvas) return;
+
+      // Clear canvas
+      ctx.fillStyle = '#070710';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (!treeData || nodePositions.size === 0) return;
+
+      // Apply view transform
+      ctx.save();
+      ctx.translate(canvas.width / 2 + panX, canvas.height / 2 + panY);
+      ctx.scale(zoom, zoom);
+
+      // Render layers (back to front)
+      renderBackground();
+      renderAscendancyBackgrounds();
+      renderGroupBackgrounds();
+      renderClassStartBackgrounds();
+      renderConnections();
+      renderNodes();
+
+      ctx.restore();
+    }
+
+    function renderBackground() {
+      const bgAtlas = atlases['background'];
+      if (!bgAtlas) return;
+
+      const bgCoords = treeData?.sprites?.background?.[SPRITE_ZOOM]?.coords?.Background2;
+      if (!bgCoords) return;
+
+      // Tile size in tree coordinates
+      const tileSize = bgCoords.w * 3;
+
+      // Calculate visible bounds with padding
+      const padding = 2000;
+      const minX = bounds.minX - padding;
+      const maxX = bounds.maxX + padding;
+      const minY = bounds.minY - padding;
+      const maxY = bounds.maxY + padding;
+
+      // Draw tiled background with low opacity
+      ctx.globalAlpha = 0.25;
+      for (let x = minX; x < maxX; x += tileSize) {
+        for (let y = minY; y < maxY; y += tileSize) {
+          ctx.drawImage(
+            bgAtlas,
+            bgCoords.x, bgCoords.y, bgCoords.w, bgCoords.h,
+            x, y, tileSize, tileSize
+          );
+        }
+      }
+      ctx.globalAlpha = 1.0;
+    }
+
+    // Fast lookups using pre-computed Sets (populated in processNodes)
+    function isMasteryGroup(groupId: string) {
+      return masteryGroups.has(String(groupId));
+    }
+
+    function isAscendancyGroup(groupId: string) {
+      return ascendancyGroups.has(String(groupId));
+    }
+
+    function renderGroupBackgrounds() {
+      // PSGroupBackground assets from TreeData
+      const psBg1 = (atlases as any)['PSGroupBackground1'] as HTMLImageElement | undefined;
+      const psBg2 = (atlases as any)['PSGroupBackground2'] as HTMLImageElement | undefined;
+      const psBg3 = (atlases as any)['PSGroupBackground3'] as HTMLImageElement | undefined;
+
+      const groups = treeData.groups;
+
+      for (const [groupId, group] of Object.entries(groups)) {
+        const g = group as any;
+
+        // Skip proxy groups (cluster jewels)
+        if (g.isProxy) continue;
+
+        // Skip groups without background
+        if (!g.background?.image) continue;
+
+        // Skip ascendancy groups - they use ascendancy-3.webp
+        if (isAscendancyGroup(groupId)) continue;
+
+        const isMastery = isMasteryGroup(groupId);
+        const bgName = g.background.image;
+
+        // Select image based on tree.json background name
+        let bgImage: HTMLImageElement | undefined = undefined;
+        let scale = 2.6;
+
+        if (bgName === 'PSGroupBackground1') {
+          bgImage = psBg1;
+          scale = isMastery ? 3.2 : 2.6;
+        } else if (bgName === 'PSGroupBackground2') {
+          bgImage = psBg2;
+          scale = isMastery ? 3.0 : 2.6;
+        } else if (bgName === 'PSGroupBackground3') {
+          bgImage = psBg3;
+          scale = isMastery ? 3.0 : 2.6;
+        }
+
+        if (!bgImage) continue;
+
+        const w = bgImage.width * scale;
+        const h = bgImage.height * scale;
+
+        ctx.save();
+        ctx.translate(g.x, g.y);
+
+        if (bgName === 'PSGroupBackground3') {
+          // PSGroupBackground3 is a semicircle - mirror to create full wheel
+          // Draw top half (normal)
+          ctx.drawImage(bgImage, -w / 2, -h, w, h);
+          // Draw bottom half (flipped vertically, positioned below)
+          ctx.save();
+          ctx.scale(1, -1);
+          ctx.drawImage(bgImage, -w / 2, -h, w, h);
+          ctx.restore();
+        } else {
+          // PSGroupBackground1 & 2 are full circles - draw centered
+          ctx.drawImage(bgImage, -w / 2, -h / 2, w, h);
+        }
+
+        ctx.restore();
+      }
+    }
+
+    function renderAscendancyBackgrounds() {
+      const ascAtlas = atlases['ascendancy'];
+      if (!ascAtlas) return;
+
+      const ascCoords = treeData?.sprites?.ascendancy?.[SPRITE_ZOOM]?.coords;
+      if (!ascCoords) return;
+
+      // Find ascendancy start nodes to position backgrounds
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (!node.isAscendancyStart || !node.ascendancyName) continue;
+
+        // Get the background sprite for this ascendancy
+        const spriteName = `Classes${node.ascendancyName}`;
+        const coords = ascCoords[spriteName];
+        if (!coords) continue;
+
+        // Scale and center the ascendancy background
+        // Note: pos.x/pos.y already have ASCENDANCY_OFFSETS applied from processNodes()
+        const scale = 2.8;
+        const w = coords.w * scale;
+        const h = coords.h * scale;
+
+        ctx.globalAlpha = 0.7;
+        ctx.drawImage(
+          ascAtlas,
+          coords.x, coords.y, coords.w, coords.h,
+          pos.x - w / 2, pos.y - h / 2, w, h
+        );
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    function renderClassStartBackgrounds() {
+      const gbAtlas = atlases['group-background'];
+      if (!gbAtlas) return;
+
+      // startNode coords are in the group-background atlas
+      const startCoords = treeData?.sprites?.startNode?.[SPRITE_ZOOM]?.coords;
+      if (!startCoords) return;
+
+      // Map class names to sprite names
+      const classToSprite = {
+        'MARAUDER': 'centermarauder',
+        'RANGER': 'centerranger',
+        'WITCH': 'centerwitch',
+        'DUELIST': 'centerduelist',
+        'TEMPLAR': 'centertemplar',
+        'SIX': 'centershadow',  // Shadow
+        'Seven': 'centerscion',  // Scion
+      };
+
+      // Find class start nodes
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (node.classStartIndex === undefined) continue;
+
+        const spriteName = classToSprite[node.name];
+        const coords = spriteName ? startCoords[spriteName] : null;
+
+        if (coords) {
+          // Scale to match tree coordinate system
+          const scale = 2.5;
+          const w = coords.w * scale;
+          const h = coords.h * scale;
+
+          ctx.drawImage(
+            gbAtlas,
+            coords.x, coords.y, coords.w, coords.h,
+            pos.x - w / 2, pos.y - h / 2, w, h
+          );
+        }
+      }
+    }
+
+    function renderConnections() {
+      if (!treeData) return;
+
+      // Use simple canvas lines for now
+      ctx.strokeStyle = '#3a3525';
+      ctx.lineWidth = 10;
+      ctx.lineCap = 'round';
+
+      // Draw connections
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (!node.out) continue;
+
+        // Skip connections FROM mastery nodes
+        if (node.isMastery) continue;
+
+        for (const outId of node.out) {
+          const targetPos = nodePositions.get(String(outId));
+          if (!targetPos) continue;
+
+          const targetNode = targetPos.node;
+
+          // Skip connections TO mastery nodes (hide visually)
+          if (targetNode.isMastery) continue;
+
+          // Skip connections between main tree and ascendancy trees
+          const sourceIsAsc = !!node.ascendancyName;
+          const targetIsAsc = !!targetNode.ascendancyName;
+          if (sourceIsAsc !== targetIsAsc) continue;
+
+          ctx.beginPath();
+          ctx.moveTo(pos.x, pos.y);
+          ctx.lineTo(targetPos.x, targetPos.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    function renderNodes() {
+      const frameAtlas = atlases['frame'];
+      const ascAtlas = atlases['ascendancy'];
+      const skillsAtlas = atlases['skills'];
+      const skillsDisabledAtlas = atlases['skills-disabled'];
+      const masteryAtlas = atlases['mastery-connected'];
+
+      // Get sprite coordinates
+      const frameCoords = treeData?.sprites?.frame?.[SPRITE_ZOOM]?.coords ?? {};
+      const ascCoords = treeData?.sprites?.ascendancy?.[SPRITE_ZOOM]?.coords ?? {};
+      const normalActiveCoords = treeData?.sprites?.normalActive?.[SPRITE_ZOOM]?.coords ?? {};
+      const normalInactiveCoords = treeData?.sprites?.normalInactive?.[SPRITE_ZOOM]?.coords ?? {};
+      const notableActiveCoords = treeData?.sprites?.notableActive?.[SPRITE_ZOOM]?.coords ?? {};
+      const notableInactiveCoords = treeData?.sprites?.notableInactive?.[SPRITE_ZOOM]?.coords ?? {};
+      const keystoneActiveCoords = treeData?.sprites?.keystoneActive?.[SPRITE_ZOOM]?.coords ?? {};
+      const keystoneInactiveCoords = treeData?.sprites?.keystoneInactive?.[SPRITE_ZOOM]?.coords ?? {};
+      const masteryCoords = treeData?.sprites?.masteryConnected?.[SPRITE_ZOOM]?.coords ?? {};
+      const ascendancyCoords = treeData?.sprites?.ascendancy?.[SPRITE_ZOOM]?.coords ?? {};
+
+      // Render sizes (scaled for tree coordinates) - adjusted for better proportions
+      const sizes = {
+        normal: { icon: 75, frame: 100 },
+        notable: { icon: 120, frame: 155 },
+        keystone: { icon: 170, frame: 220 },
+        mastery: { icon: 200, frame: 0 },  // Mastery icons are larger
+        jewel: { icon: 110, frame: 145 },
+        ascNotable: { icon: 100, frame: 135 },
+        ascSmall: { icon: 75, frame: 100 },
+      };
+
+      // Frame sprite names (unallocated vs allocated)
+      const frameNamesUnallocated = {
+        normal: 'PSSkillFrame',
+        notable: 'NotableFrameUnallocated',
+        keystone: 'KeystoneFrameUnallocated',
+        jewel: 'JewelFrameUnallocated',
+      };
+
+      const frameNamesAllocated = {
+        normal: 'PSSkillFrameActive',
+        notable: 'NotableFrameAllocated',
+        keystone: 'KeystoneFrameAllocated',
+        jewel: 'JewelFrameAllocated',
+      };
+
+      // Ascendancy frame names (in ascendancy atlas)
+      const ascFrameNamesUnallocated = {
+        ascNotable: 'AscendancyFrameLargeNormal',
+        ascSmall: 'AscendancyFrameSmallNormal',
+      };
+
+      const ascFrameNamesAllocated = {
+        ascNotable: 'AscendancyFrameLargeAllocated',
+        ascSmall: 'AscendancyFrameSmallAllocated',
+      };
+
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        const isAllocated = allocatedNodes.has(nodeId);
+
+        // Skip class start nodes (they're handled by renderClassStartBackgrounds)
+        if (node.classStartIndex !== undefined) continue;
+
+        // Determine node type
+        let type = 'normal';
+        let isAscendancy = !!node.ascendancyName;
+
+        if (node.isKeystone) type = 'keystone';
+        else if (node.isNotable) type = isAscendancy ? 'ascNotable' : 'notable';
+        else if (node.isMastery) type = 'mastery';
+        else if (node.isJewelSocket) type = 'jewel';
+        else if (isAscendancy) type = 'ascSmall';
+
+        const size = sizes[type] || sizes.normal;
+        const halfIcon = size.icon / 2;
+        const halfFrame = size.frame / 2;
+
+        // 1. Draw icon first (behind frame)
+        let iconCoords = null;
+        let atlas = null;
+
+        if (type === 'mastery') {
+          // Unallocated masteries use node.inactiveIcon from mastery-connected-3.png
+          // Allocated masteries would use mastery-active-selected-3.png
+          const icon = node.inactiveIcon;
+          iconCoords = masteryCoords[icon];
+          atlas = masteryAtlas;
+        } else {
+          // All other nodes use skills atlas
+          const icon = node.icon;
+          if (type === 'keystone') {
+            iconCoords = isAllocated ? keystoneActiveCoords[icon] : keystoneInactiveCoords[icon];
+          } else if (type === 'notable' || type === 'ascNotable') {
+            iconCoords = isAllocated ? notableActiveCoords[icon] : notableInactiveCoords[icon];
+          } else {
+            iconCoords = isAllocated ? normalActiveCoords[icon] : normalInactiveCoords[icon];
+          }
+          atlas = isAllocated ? skillsAtlas : skillsDisabledAtlas;
+        }
+
+        if (iconCoords && atlas) {
+          ctx.drawImage(
+            atlas,
+            iconCoords.x, iconCoords.y, iconCoords.w, iconCoords.h,
+            pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon
+          );
+        } else {
+          // Fallback: colored circle
+          const colors = {
+            normal: '#4a4a55',
+            notable: '#c8b07a',
+            keystone: '#d4a84b',
+            mastery: '#6b4a6b',
+            jewel: '#4a6b6b',
+          };
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, halfIcon * 0.6, 0, Math.PI * 2);
+          ctx.fillStyle = colors[type] || colors.normal;
+          ctx.fill();
+        }
+
+        // 2. Draw frame on top of icon
+        if (size.frame > 0) {
+          let frameCoord = null;
+          let frameAtlasToUse = frameAtlas;
+
+          if (type === 'ascNotable' || type === 'ascSmall') {
+            // Ascendancy nodes use frames from ascendancy atlas
+            const frameNameMap = isAllocated ? ascFrameNamesAllocated : ascFrameNamesUnallocated;
+            const frameName = frameNameMap[type];
+            frameCoord = ascCoords[frameName];
+            frameAtlasToUse = ascAtlas;
+          } else {
+            // Regular nodes use frames from frame atlas
+            const frameNameMap = isAllocated ? frameNamesAllocated : frameNamesUnallocated;
+            const frameName = frameNameMap[type];
+            frameCoord = frameCoords[frameName];
+          }
+
+          if (frameCoord && frameAtlasToUse) {
+            ctx.drawImage(
+              frameAtlasToUse,
+              frameCoord.x, frameCoord.y, frameCoord.w, frameCoord.h,
+              pos.x - halfFrame, pos.y - halfFrame, size.frame, size.frame
+            );
+          }
+        }
+      }
+    }
+
+    // ==========================================
+    // VIEW CONTROLS
+    // ==========================================
+    function centerView() {
+      panX = 0;
+      panY = 0;
+      zoom = 0.05;
+      updateDebug();
+    }
+
+    function resizeCanvas() {
+      if (!viewer || !canvas) return;
+      const rect = viewer.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      render();
+    }
+
+    // Pan handlers
+    function onPointerDown(e) {
+      isPanning = true;
+      panStartX = e.clientX - panX;
+      panStartY = e.clientY - panY;
+      viewer?.setPointerCapture(e.pointerId);
+    }
+
+    function onPointerMove(e) {
+      if (!isPanning) return;
+      panX = e.clientX - panStartX;
+      panY = e.clientY - panStartY;
+      updateDebug();
+      render();
+    }
+
+    function onPointerUp(e) {
+      isPanning = false;
+      viewer?.releasePointerCapture(e.pointerId);
+    }
+
+    // Zoom handler
+    function onWheel(e) {
+      e.preventDefault();
+
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left - canvas.width / 2 - panX;
+      const mouseY = e.clientY - rect.top - canvas.height / 2 - panY;
+
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      const newZoom = Math.max(0.01, Math.min(0.5, zoom * zoomFactor));
+
+      if (newZoom !== zoom) {
+        // Zoom toward mouse position
+        const scale = newZoom / zoom;
+        panX = panX - mouseX * (scale - 1);
+        panY = panY - mouseY * (scale - 1);
+        zoom = newZoom;
+
+        updateDebug();
+        render();
+      }
+    }
+
+    // ==========================================
+    // UI HELPERS
+    // ==========================================
+    function showLoading(show) {
+      if (loading) {
+        loading.classList.toggle('hidden', !show);
+      }
+    }
+
+    function showError(message) {
+      if (ctx && canvas) {
+        ctx.fillStyle = '#ff4444';
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Error: ${message}`, canvas.width / 2, canvas.height / 2);
+      }
+    }
+
+    function updateDebug() {
+      if (debugPan) debugPan.textContent = `(${Math.round(panX)}, ${Math.round(panY)})`;
+      if (debugZoom) debugZoom.textContent = zoom.toFixed(4);
+      if (debugNodes) debugNodes.textContent = String(nodePositions.size);
+      if (debugAllocated) debugAllocated.textContent = String(allocatedNodes.size);
+      if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 1000)}%`;
+    }
+
+    // ==========================================
+    // EVENT BINDING
+    // ==========================================
+    viewer.addEventListener('pointerdown', onPointerDown);
+    viewer.addEventListener('pointermove', onPointerMove);
+    viewer.addEventListener('pointerup', onPointerUp);
+    viewer.addEventListener('pointerleave', onPointerUp);
+    viewer.addEventListener('wheel', onWheel, { passive: false });
+    viewer.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    resetBtn?.addEventListener('click', () => {
+      centerView();
+      render();
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+    console.log('[PT] Initializing passive tree viewer...');
+    resizeCanvas();
+    loadTreeData();
+
+  })();
+</script>
