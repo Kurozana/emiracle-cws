@@ -367,7 +367,23 @@ import Navigation from '../components/Navigation.astro';
         'background': 'data/assets/background-3.png',
         'ascendancy': 'data/assets/ascendancy-3.webp',
         'jewel': 'data/assets/jewel-3.png',
-        'line': 'data/assets/line-3.png',
+        'line': 'data/assets/line-3.png',  // Contains line connectors
+        // Individual orbit images (quarter circles, need mirroring for full ring)
+        'Orbit1Normal': 'data/assets/orbits/Orbit1Normal.png',
+        'Orbit2Normal': 'data/assets/orbits/Orbit2Normal.png',
+        'Orbit3Normal': 'data/assets/orbits/Orbit3Normal.png',
+        'Orbit4Normal': 'data/assets/orbits/Orbit4Normal.png',
+        'Orbit5Normal': 'data/assets/orbits/Orbit5Normal.png',
+        'Orbit6Normal': 'data/assets/orbits/Orbit6Normal.png',
+        'Orbit1Active': 'data/assets/orbits/Orbit1Active.png',
+        'Orbit2Active': 'data/assets/orbits/Orbit2Active.png',
+        'Orbit3Active': 'data/assets/orbits/Orbit3Active.png',
+        'Orbit4Active': 'data/assets/orbits/Orbit4Active.png',
+        'Orbit5Active': 'data/assets/orbits/Orbit5Active.png',
+        'Orbit6Active': 'data/assets/orbits/Orbit6Active.png',
+        // Individual line connector images
+        'LineConnectorNormal': 'data/assets/LineConnectorNormal.png',
+        'LineConnectorActive': 'data/assets/LineConnectorActive.png',
         // Individual group background images
         'bg-small': 'data/assets/backgrounds/GroupBackgroundSmallAlt.png',
         'bg-medium': 'data/assets/backgrounds/GroupBackgroundMediumAlt.png',
@@ -396,6 +412,7 @@ import Navigation from '../components/Navigation.astro';
 
       await Promise.all(loadPromises);
       console.log(`[PT] Atlases loaded: ${Object.keys(atlases).length}`);
+      console.log(`[PT] Line atlas loaded: ${(atlases as any)['line'] ? 'yes' : 'no'}`);
     }
 
     // ==========================================
@@ -479,7 +496,8 @@ import Navigation from '../components/Navigation.astro';
       renderAscendancyBackgrounds();
       renderGroupBackgrounds();
       renderClassStartBackgrounds();
-      renderConnections();
+      renderOrbits();           // Orbit circles per group (from line atlas)
+      renderLineConnectors();   // Straight line connections (from line atlas)
       renderNodes();
 
       ctx.restore();
@@ -664,15 +682,122 @@ import Navigation from '../components/Navigation.astro';
       }
     }
 
-    function renderConnections() {
+    /**
+     * Renders orbit rings per group using individual PNG files from PoB TreeData.
+     * Orbit sprites are QUARTER CIRCLES with arc center at bottom-right.
+     * They get mirrored 4 times to make a full ring.
+     * Orbits are nested rings - Orbit1 innermost, Orbit6 outermost.
+     */
+    function renderOrbits() {
       if (!treeData) return;
 
-      // Use simple canvas lines for now
-      ctx.strokeStyle = '#3a3525';
-      ctx.lineWidth = 10;
-      ctx.lineCap = 'round';
+      const groups = treeData.groups;
+      const { orbitRadii } = treeData.constants;
 
-      // Draw connections
+      // Individual orbit images (from PoB TreeData)
+      const orbitImages: Record<number, HTMLImageElement | undefined> = {
+        1: (atlases as any)['Orbit1Normal'],
+        2: (atlases as any)['Orbit2Normal'],
+        3: (atlases as any)['Orbit3Normal'],
+        4: (atlases as any)['Orbit4Normal'],
+        5: (atlases as any)['Orbit5Normal'],
+        6: (atlases as any)['Orbit6Normal'],
+      };
+
+      // Track which groups have which orbits
+      const groupOrbits = new Map<string, Set<number>>();
+      for (const [_nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (node.group === undefined || node.orbit === undefined) continue;
+        if (node.orbit === 0) continue;
+
+        const groupId = String(node.group);
+        if (!groupOrbits.has(groupId)) {
+          groupOrbits.set(groupId, new Set());
+        }
+        groupOrbits.get(groupId)!.add(node.orbit);
+      }
+
+      // Draw orbits for each group (only for wheel clusters with PSGroupBackground)
+      for (const [groupId, orbits] of groupOrbits) {
+        const group = groups[groupId];
+        if (!group || group.isProxy) continue;
+        if (isAscendancyGroup(groupId)) continue;
+
+        const g = group as any;
+
+        // Only draw orbits for groups with wheel backgrounds (PSGroupBackground1/2/3)
+        const bgName = g.background?.image;
+        if (!bgName || !bgName.startsWith('PSGroupBackground')) continue;
+
+        // Draw each orbit level as a nested ring
+        for (const orbitLevel of orbits) {
+          const orbitImg = orbitImages[orbitLevel];
+          if (!orbitImg) continue;
+
+          const radius = orbitRadii[orbitLevel] || 0;
+          if (radius === 0) continue;
+
+          // Scale: image width represents the arc's extent, scale to match orbit radius
+          const imgSize = orbitImg.width;
+          const scale = radius / imgSize;
+          const size = imgSize * scale;  // = radius
+
+          ctx.save();
+          ctx.translate(g.x, g.y);
+
+          // The orbit sprite is a quarter arc with arc center at BOTTOM-RIGHT.
+          // To form a full circle, draw 4 quadrants:
+          // Position sprite so its bottom-right corner (arc center) is at origin.
+
+          // Quadrant: Top-left of full circle (original sprite)
+          ctx.drawImage(orbitImg, -size, -size, size, size);
+
+          // Quadrant: Top-right (flip horizontally)
+          ctx.save();
+          ctx.scale(-1, 1);
+          ctx.drawImage(orbitImg, -size, -size, size, size);
+          ctx.restore();
+
+          // Quadrant: Bottom-right (flip both)
+          ctx.save();
+          ctx.scale(-1, -1);
+          ctx.drawImage(orbitImg, -size, -size, size, size);
+          ctx.restore();
+
+          // Quadrant: Bottom-left (flip vertically)
+          ctx.save();
+          ctx.scale(1, -1);
+          ctx.drawImage(orbitImg, -size, -size, size, size);
+          ctx.restore();
+
+          ctx.restore();
+        }
+      }
+    }
+
+    /**
+     * Renders straight line connections between nodes using individual LineConnector PNG.
+     */
+    function renderLineConnectors() {
+      if (!treeData) return;
+
+      const lineImg = (atlases as any)['LineConnectorNormal'] as HTMLImageElement | undefined;
+      if (!lineImg) return;
+
+      const groups = treeData.groups;
+
+      // Track drawn connections to avoid duplicates
+      const drawnConnections = new Set<string>();
+
+      // Helper to check if a node is in a wheel cluster
+      function isInWheel(node: any): boolean {
+        if (node.group === undefined) return false;
+        const group = groups[node.group];
+        const bgName = (group as any)?.background?.image;
+        return bgName && bgName.startsWith('PSGroupBackground');
+      }
+
       for (const [nodeId, pos] of nodePositions) {
         const node = pos.node;
         if (!node.out) continue;
@@ -680,24 +805,45 @@ import Navigation from '../components/Navigation.astro';
         // Skip connections FROM mastery nodes
         if (node.isMastery) continue;
 
+        // Skip nodes in wheels - they use orbit rings
+        if (isInWheel(node)) continue;
+
         for (const outId of node.out) {
+          // Skip duplicate connections
+          const connKey = [nodeId, outId].sort().join('-');
+          if (drawnConnections.has(connKey)) continue;
+          drawnConnections.add(connKey);
+
           const targetPos = nodePositions.get(String(outId));
           if (!targetPos) continue;
 
           const targetNode = targetPos.node;
 
-          // Skip connections TO mastery nodes (hide visually)
+          // Skip connections TO mastery nodes
           if (targetNode.isMastery) continue;
+
+          // Skip connections TO nodes in wheels
+          if (isInWheel(targetNode)) continue;
 
           // Skip connections between main tree and ascendancy trees
           const sourceIsAsc = !!node.ascendancyName;
           const targetIsAsc = !!targetNode.ascendancyName;
           if (sourceIsAsc !== targetIsAsc) continue;
 
-          ctx.beginPath();
-          ctx.moveTo(pos.x, pos.y);
-          ctx.lineTo(targetPos.x, targetPos.y);
-          ctx.stroke();
+          // Draw straight line connector
+          const dx = targetPos.x - pos.x;
+          const dy = targetPos.y - pos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+
+          // Line thickness scaled appropriately (image height * scale)
+          const lineHeight = lineImg.height * 2.5;
+
+          ctx.save();
+          ctx.translate((pos.x + targetPos.x) / 2, (pos.y + targetPos.y) / 2);
+          ctx.rotate(angle);
+          ctx.drawImage(lineImg, -distance / 2, -lineHeight / 2, distance, lineHeight);
+          ctx.restore();
         }
       }
     }
