@@ -15,7 +15,22 @@
       "Bash(git checkout:*)",
       "Bash(timeout 10 npm run dev:*)",
       "Bash(ls:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(dir /b \"c:\\\\Users\\\\ialboiez\\\\emiracle-cws\\\\public\\\\data\\\\assets\")",
+      "Bash(del \"src\\\\pages\\\\passive-tree-test.astro\")",
+      "Bash(powershell -Command:*)",
+      "Bash(dir:*)",
+      "Bash(ConvertTo-Json \")",
+      "Bash(while read cat)",
+      "Bash(do echo -n \"$cat: \")",
+      "Bash(done)",
+      "Bash(for cat in background normalActive normalInactive notableActive notableInactive keystoneActive keystoneInactive mastery frame line jewel ascendancy)",
+      "Bash(for cat in masteryConnected masteryActiveSelected masteryActiveEffect tattooActiveEffect groupBackground)",
+      "Bash(for cat in aulBloodline azmeriBloodline breachlordBloodline catarinaBloodline deliriousBloodline farrulBloodline kingInTheMistsBloodline lyciaBloodline olrothBloodline oshabiBloodline trialmasterBloodline)",
+      "Bash(del c:Usersialboiezemiracle-cwsscriptsinvestigate-groups.mjs)",
+      "Bash(git stash:*)",
+      "Bash(del \"\\\\?\\\\c:\\\\Users\\\\ialboiez\\\\emiracle-cws\\\\nul\")"
     ]
   }
 }

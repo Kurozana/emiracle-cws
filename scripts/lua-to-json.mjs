@@ -169,7 +169,7 @@ console.log(`  nodes: ${Object.keys(treeData.nodes || {}).length}`);
 console.log(`  groups: ${Object.keys(treeData.groups || {}).length}`);
 
 const treeOutPath = join(OUT_DIR, 'pob-tree.json');
-writeFileSync(treeOutPath, JSON.stringify(treeData));
+writeFileSync(treeOutPath, JSON.stringify(treeData, null, 2));
 console.log(`  Written to ${treeOutPath}`);
 
 // Convert sprites.lua
@@ -180,7 +180,7 @@ const spriteCategories = Object.keys(spritesData.sprites || {});
 console.log(`  sprite categories: ${spriteCategories.length} (${spriteCategories.join(', ')})`);
 
 const spritesOutPath = join(OUT_DIR, 'pob-sprites.json');
-writeFileSync(spritesOutPath, JSON.stringify(spritesData));
+writeFileSync(spritesOutPath, JSON.stringify(spritesData, null, 2));
 console.log(`  Written to ${spritesOutPath}`);
 
 console.log('Done!');

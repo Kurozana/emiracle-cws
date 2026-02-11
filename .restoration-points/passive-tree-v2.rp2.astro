@@ -1,0 +1,817 @@
+---
+/**
+ * PASSIVE TREE VIEWER V2
+ *
+ * PoB-based approach: uses converted PoB tree.lua and sprites.lua data.
+ * All atlas images loaded from GGG CDN via sprites.json URLs.
+ * All sprite coordinates from sprites.json (converted from sprites.lua).
+ *
+ * Rules:
+ * - All styles scoped with 'pt2-' prefix
+ * - No global CSS additions
+ * - Canvas-based rendering
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navigation from '../components/Navigation.astro';
+---
+
+<BaseLayout title="Passive Tree V2">
+  <Navigation slot="header" />
+
+  <section class="pt2-page">
+    <div class="pt2-container">
+      <div class="pt2-widget">
+        <div class="pt2-header">
+          <span class="pt2-title">Passive Skill Tree (V2 - PoB)</span>
+          <div class="pt2-controls">
+            <span class="pt2-zoom-label">Zoom: <span id="pt2-zoom-value">100%</span></span>
+            <button class="pt2-btn" id="pt2-reset-btn" title="Reset View">&#x27F2;</button>
+          </div>
+        </div>
+
+        <div class="pt2-viewer" id="pt2-viewer">
+          <canvas id="pt2-canvas"></canvas>
+          <div class="pt2-loading" id="pt2-loading">
+            <div class="pt2-spinner"></div>
+            <span id="pt2-loading-text">Loading passive tree...</span>
+          </div>
+        </div>
+
+        <div class="pt2-footer">
+          <span class="pt2-stat" id="pt2-stat-nodes">Nodes: 0</span>
+          <span class="pt2-stat" id="pt2-stat-groups">Groups: 0</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .pt2-page {
+    min-height: calc(100vh - 60px);
+    background: #0a0a0f;
+    padding: 1rem;
+  }
+  .pt2-container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .pt2-widget {
+    background: #0d0d14;
+    border: 1px solid #1a1a25;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .pt2-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #101018;
+    border-bottom: 1px solid #1a1a25;
+  }
+  .pt2-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c8b07a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pt2-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .pt2-zoom-label {
+    font-size: 0.75rem;
+    color: #606070;
+  }
+  .pt2-btn {
+    background: #1a1a24;
+    border: 1px solid #2a2a35;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    color: #808090;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+  }
+  .pt2-btn:hover {
+    background: #252530;
+    color: #c8b07a;
+  }
+  .pt2-viewer {
+    position: relative;
+    width: 100%;
+    height: 700px;
+    background: #05050a;
+    cursor: grab;
+  }
+  .pt2-viewer:active {
+    cursor: grabbing;
+  }
+  #pt2-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .pt2-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: rgba(5, 5, 10, 0.9);
+    color: #606070;
+    font-size: 0.9rem;
+  }
+  .pt2-loading.hidden {
+    display: none;
+  }
+  .pt2-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #1a1a25;
+    border-top-color: #c8b07a;
+    border-radius: 50%;
+    animation: pt2-spin 1s linear infinite;
+  }
+  @keyframes pt2-spin {
+    to { transform: rotate(360deg); }
+  }
+  .pt2-footer {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.6rem 1rem;
+    background: #101018;
+    border-top: 1px solid #1a1a25;
+  }
+  .pt2-stat {
+    font-size: 0.75rem;
+    color: #606070;
+  }
+</style>
+
+<script>
+  /**
+   * PASSIVE TREE VIEWER V2
+   *
+   * Data flow:
+   * 1. Load pob-tree.json (nodes, groups, constants) - converted from PoB tree.lua
+   * 2. Load pob-sprites.json (atlas URLs + sprite coords) - converted from PoB sprites.lua
+   * 3. Load atlas images from GGG CDN URLs
+   * 4. Process node positions from group centers + orbit math
+   * 5. Render layers: background -> group bgs -> connections -> orbits -> nodes -> frames
+   *
+   * Rendering layers (back to front):
+   * 1. Tiled background
+   * 2. Group backgrounds (PSGroupBackground wheels)
+   * 3. Line connectors (straight lines between nodes)
+   * 4. Orbit rings (quarter-circle arcs mirrored 4x)
+   * 5. Node icons (from skills atlas)
+   * 6. Node frames (from frame atlas)
+   */
+  (function() {
+    'use strict';
+
+    const BASE_URL = import.meta.env.BASE_URL || '/';
+
+    // DOM
+    const viewer = document.getElementById('pt2-viewer');
+    const canvas = document.getElementById('pt2-canvas') as HTMLCanvasElement;
+    const loadingEl = document.getElementById('pt2-loading');
+    const loadingText = document.getElementById('pt2-loading-text');
+    const zoomValue = document.getElementById('pt2-zoom-value');
+    const resetBtn = document.getElementById('pt2-reset-btn');
+    const statNodes = document.getElementById('pt2-stat-nodes');
+    const statGroups = document.getElementById('pt2-stat-groups');
+
+    if (!viewer || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    // ==========================================
+    // TYPES
+    // ==========================================
+    interface SpriteCoord {
+      x: number; y: number; w: number; h: number;
+    }
+    interface SpriteCategory {
+      filename: string;
+      w: number;
+      h: number;
+      coords: Record<string, SpriteCoord>;
+    }
+    interface SpritesData {
+      sprites: Record<string, SpriteCategory>;
+      extraImages?: any[];
+    }
+    interface TreeNode {
+      skill?: number;
+      name?: string;
+      icon?: string;
+      stats?: string[];
+      group: number;
+      orbit: number;
+      orbitIndex: number;
+      out?: string[];
+      in?: string[];
+      isNotable?: boolean;
+      isKeystone?: boolean;
+      isMastery?: boolean;
+      isJewelSocket?: boolean;
+      isBloodline?: boolean;
+      isMultipleChoiceOption?: boolean;
+      ascendancyName?: string;
+      isAscendancyStart?: boolean;
+      classStartIndex?: number;
+      inactiveIcon?: string;
+    }
+    interface TreeGroup {
+      x: number;
+      y: number;
+      orbits: number[];
+      nodes: string[];
+      background?: { image: string; isHalfImage?: boolean };
+      isProxy?: boolean;
+    }
+    interface TreeData {
+      nodes: Record<string, TreeNode>;
+      groups: Record<string, TreeGroup>;
+      constants: {
+        orbitRadii: number[];
+        skillsPerOrbit: number[];
+        PSSCentreInnerRadius: number;
+      };
+      min_x: number; min_y: number;
+      max_x: number; max_y: number;
+      classes: any[];
+    }
+
+    // ==========================================
+    // STATE
+    // ==========================================
+    let treeData: TreeData | null = null;
+    let spritesData: SpritesData | null = null;
+    const atlases: Record<string, HTMLImageElement> = {};
+    // Computed node positions: nodeId -> {x, y, node}
+    const nodePositions = new Map<string, { x: number; y: number; node: TreeNode }>();
+    // Ascendancy group lookup: groupId -> ascendancyName
+    const ascendancyGroups = new Map<string, string>();
+    // Ascendancy start group: ascendancyName -> groupId (one bg per ascendancy)
+    const ascStartGroups = new Map<string, string>();
+    // Class start group lookup: groupId -> className (lowercase)
+    const classStartGroups = new Map<string, string>();
+    // Groups that use straight line connectors instead of orbit rings
+    const lineOnlyGroups = new Set<string>([]);
+
+    // View state
+    let panX = 0;
+    let panY = 0;
+    let zoom = 0.05;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    // ==========================================
+    // DATA LOADING
+    // ==========================================
+    function setLoadingText(text: string) {
+      if (loadingText) loadingText.textContent = text;
+    }
+
+    async function init() {
+      try {
+        // 1. Load JSON data
+        setLoadingText('Loading tree data...');
+        const [treeResp, spritesResp] = await Promise.all([
+          fetch(`${BASE_URL}data/pob-tree.json`),
+          fetch(`${BASE_URL}data/pob-sprites.json`),
+        ]);
+        treeData = await treeResp.json();
+        spritesData = await spritesResp.json();
+        console.log('[PT2] Tree loaded:', Object.keys(treeData!.nodes).length, 'nodes,', Object.keys(treeData!.groups).length, 'groups');
+
+        // 2. Load atlas images from CDN URLs
+        setLoadingText('Loading textures...');
+        await loadAtlases();
+
+        // 3. Process node positions
+        setLoadingText('Processing nodes...');
+        processNodes();
+
+        // 4. Render
+        centerView();
+        render();
+
+        if (statNodes) statNodes.textContent = `Nodes: ${nodePositions.size}`;
+        if (statGroups) statGroups.textContent = `Groups: ${Object.keys(treeData!.groups).length}`;
+      } catch (err) {
+        console.error('[PT2] Init error:', err);
+        setLoadingText(`Error: ${err}`);
+        return;
+      }
+      loadingEl?.classList.add('hidden');
+    }
+
+    async function loadAtlases() {
+      if (!spritesData) return;
+
+      // Map CDN filenames to our local asset paths.
+      // CDN URL: https://web.poecdn.com/image/passive-skill/skills-3.jpg?hash
+      // Local:   data/assets/skills-3.jpg
+      // We extract the filename from the CDN URL and map to local.
+      const cdnToLocal: Record<string, string> = {};
+      for (const [key, cat] of Object.entries(spritesData.sprites)) {
+        // Extract filename: "skills-3.jpg" from "https://.../skills-3.jpg?hash"
+        const url = cat.filename;
+        const match = url.match(/\/([^/?]+)(\?|$)/);
+        if (match) {
+          cdnToLocal[key] = `data/assets/${match[1]}`;
+        }
+      }
+
+      // Group background PNGs (not in sprites.json, loaded separately)
+      const localAssets: Record<string, string> = {
+        'PSGroupBackground1': 'data/assets/backgrounds/PSGroupBackground1.png',
+        'PSGroupBackground2': 'data/assets/backgrounds/PSGroupBackground2.png',
+        'PSGroupBackground3': 'data/assets/backgrounds/PSGroupBackground3.png',
+      };
+
+      // Class starting area center PNGs
+      const classNames = ['duelist','marauder','ranger','scion','shadow','templar','witch'];
+      for (const name of classNames) {
+        localAssets[`center${name}`] = `data/assets/classes/center${name}.png`;
+      }
+
+      const allAssets = { ...cdnToLocal, ...localAssets };
+      const promises: Promise<void>[] = [];
+
+      for (const [key, path] of Object.entries(allAssets)) {
+        promises.push(new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => { atlases[key] = img; resolve(); };
+          img.onerror = () => { console.warn(`[PT2] Failed to load: ${key} (${path})`); resolve(); };
+          img.src = `${BASE_URL}${path}`;
+        }));
+      }
+
+      await Promise.all(promises);
+      console.log('[PT2] Atlases loaded:', Object.keys(atlases).length, '/', Object.keys(allAssets).length);
+    }
+
+    // ==========================================
+    // NODE POSITION CALCULATION
+    // ==========================================
+    function processNodes() {
+      if (!treeData) return;
+      const { nodes, groups, constants } = treeData;
+      const { orbitRadii, skillsPerOrbit } = constants;
+
+      nodePositions.clear();
+
+      for (const [nodeId, node] of Object.entries(nodes)) {
+        if (nodeId === 'root') continue;
+        if (node.group === undefined) continue;
+
+        const group = groups[node.group];
+        if (!group) continue;
+        if (group.isProxy) continue;
+
+        const orbit = node.orbit ?? 0;
+        const orbitIndex = node.orbitIndex ?? 0;
+        const radius = orbitRadii[orbit] ?? 0;
+        const skillCount = skillsPerOrbit[orbit] ?? 1;
+
+        // Angle: nodes distributed evenly, starting from top (PoE convention)
+        const angle = (2 * Math.PI * orbitIndex) / skillCount;
+
+        // Position: group center + orbit offset
+        const x = group.x + radius * Math.sin(angle);
+        const y = group.y - radius * Math.cos(angle);
+
+        nodePositions.set(nodeId, { x, y, node });
+      }
+
+      // Build ascendancy group lookup
+      ascendancyGroups.clear();
+      ascStartGroups.clear();
+      for (const [_nid, n] of Object.entries(nodes)) {
+        if (n.ascendancyName && n.group !== undefined) {
+          ascendancyGroups.set(String(n.group), n.ascendancyName);
+        }
+        if (n.isAscendancyStart && n.ascendancyName && n.group !== undefined) {
+          ascStartGroups.set(n.ascendancyName, String(n.group));
+        }
+      }
+
+      // Build class start group lookup (classStartIndex -> classes[i].name)
+      classStartGroups.clear();
+      for (const [_nid, n] of Object.entries(nodes)) {
+        if (n.classStartIndex !== undefined && n.group !== undefined) {
+          const cls = treeData!.classes?.[n.classStartIndex];
+          if (cls?.name) {
+            classStartGroups.set(String(n.group), cls.name.toLowerCase());
+          }
+        }
+      }
+
+      console.log('[PT2] Processed', nodePositions.size, 'node positions,', ascendancyGroups.size, 'ascendancy groups,', classStartGroups.size, 'class starts');
+    }
+
+    // ==========================================
+    // SPRITE HELPERS
+    // ==========================================
+    /** Get sprite coords from a category by key name */
+    function getCoords(category: string, key: string): SpriteCoord | null {
+      const cat = spritesData?.sprites?.[category];
+      if (!cat) return null;
+      return cat.coords?.[key] ?? null;
+    }
+
+    /** Get the atlas image for a sprite category */
+    function getAtlas(category: string): HTMLImageElement | null {
+      return atlases[category] ?? null;
+    }
+
+    /** Draw a sprite from an atlas category */
+    function drawSprite(category: string, key: string, dx: number, dy: number, dw: number, dh: number) {
+      const atlas = getAtlas(category);
+      const coords = getCoords(category, key);
+      if (!atlas || !coords) return false;
+      ctx!.drawImage(atlas, coords.x, coords.y, coords.w, coords.h, dx, dy, dw, dh);
+      return true;
+    }
+
+    // ==========================================
+    // RENDERING
+    // ==========================================
+    function render() {
+      if (!ctx || !canvas || !treeData) return;
+
+      ctx.fillStyle = '#070710';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(canvas.width / 2 + panX, canvas.height / 2 + panY);
+      ctx.scale(zoom, zoom);
+
+      renderBackground();
+      renderGroupBackgrounds();
+      renderConnections();
+      renderNodes();
+
+      ctx.restore();
+    }
+
+    function renderBackground() {
+      const coords = getCoords('background', 'Background2');
+      const atlas = getAtlas('background');
+      if (!coords || !atlas) return;
+
+      const tileSize = coords.w * 3;
+      const pad = 2000;
+      const minX = treeData!.min_x - pad;
+      const maxX = treeData!.max_x + pad;
+      const minY = treeData!.min_y - pad;
+      const maxY = treeData!.max_y + pad;
+
+      ctx!.globalAlpha = 0.25;
+      for (let x = minX; x < maxX; x += tileSize) {
+        for (let y = minY; y < maxY; y += tileSize) {
+          ctx!.drawImage(atlas, coords.x, coords.y, coords.w, coords.h, x, y, tileSize, tileSize);
+        }
+      }
+      ctx!.globalAlpha = 1.0;
+    }
+
+    function renderGroupBackgrounds() {
+      if (!treeData) return;
+      const groups = treeData.groups;
+
+      for (const [gid, group] of Object.entries(groups)) {
+        if (group.isProxy) continue;
+
+        // Ascendancy groups: one background per ascendancy, only at the start group
+        const ascName = ascendancyGroups.get(gid);
+        if (ascName) {
+          // Only draw background at the ascendancy's start group
+          if (ascStartGroups.get(ascName) === gid) {
+            const spriteKey = `Classes${ascName}`;
+            const coords = getCoords('ascendancy', spriteKey);
+            const atlas = getAtlas('ascendancy');
+            if (coords && atlas) {
+              const scale = 2.6;
+              const w = coords.w * scale;
+              const h = coords.h * scale;
+              ctx!.save();
+              ctx!.translate(group.x, group.y);
+              ctx!.drawImage(atlas, coords.x, coords.y, coords.w, coords.h, -w / 2, -h / 2, w, h);
+              ctx!.restore();
+            }
+          }
+          continue; // Skip PSGroupBackground for ALL ascendancy groups
+        }
+
+        // Class starting areas: use center background from classes/ assets
+        const className = classStartGroups.get(gid);
+        if (className) {
+          const bgImg = atlases[`center${className}`] as HTMLImageElement | undefined;
+          if (bgImg) {
+            const scale = 2.6;
+            const w = bgImg.width * scale;
+            const h = bgImg.height * scale;
+            ctx!.save();
+            ctx!.translate(group.x, group.y);
+            ctx!.drawImage(bgImg, -w / 2, -h / 2, w, h);
+            ctx!.restore();
+          }
+          continue;
+        }
+
+        // Regular groups: use PSGroupBackground
+        if (!group.background?.image) continue;
+
+        const bgName = group.background.image;
+        const bgImg = atlases[bgName] as HTMLImageElement | undefined;
+        if (!bgImg) continue;
+
+        const isHalf = group.background.isHalfImage;
+        const scale = 2.6;
+        const w = bgImg.width * scale;
+        const h = bgImg.height * scale;
+
+        ctx!.save();
+        ctx!.translate(group.x, group.y);
+
+        if (isHalf) {
+          // Half image: draw top half, then mirror for bottom
+          ctx!.drawImage(bgImg, -w / 2, -h, w, h);
+          ctx!.save();
+          ctx!.scale(1, -1);
+          ctx!.drawImage(bgImg, -w / 2, -h, w, h);
+          ctx!.restore();
+        } else {
+          ctx!.drawImage(bgImg, -w / 2, -h / 2, w, h);
+        }
+
+        ctx!.restore();
+      }
+    }
+
+    function renderConnections() {
+      if (!treeData || !spritesData) return;
+
+      // Line connector from line atlas
+      const lineAtlas = getAtlas('line');
+      const lineCoords = getCoords('line', 'LineConnectorNormal');
+      if (!lineAtlas || !lineCoords) return;
+
+      const { orbitRadii, skillsPerOrbit } = treeData.constants;
+      const groups = treeData.groups;
+      const lineHeight = lineCoords.h * 2.6;
+
+      const drawnConnections = new Set<string>();
+
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (node.isMastery) continue;
+
+        // Use both out and in arrays to catch all connections (dedup handles overlap)
+        const connectedIds = [...(node.out || []), ...(node.in || [])];
+        for (const outId of connectedIds) {
+          const connKey = [nodeId, outId].sort().join('-');
+          if (drawnConnections.has(connKey)) continue;
+          drawnConnections.add(connKey);
+
+          const targetPos = nodePositions.get(String(outId));
+          if (!targetPos) continue;
+          const targetNode = targetPos.node;
+          if (targetNode.isMastery) continue;
+
+          // Skip cross ascendancy/main connections
+          const srcAsc = !!node.ascendancyName;
+          const tgtAsc = !!targetNode.ascendancyName;
+          if (srcAsc !== tgtAsc) continue;
+
+          // Check if same group + same orbit (orbit arc connection)
+          const sameGroup = node.group === targetNode.group;
+          const sameOrbit = node.orbit === targetNode.orbit && node.orbit > 0;
+
+          if (sameGroup && sameOrbit && !lineOnlyGroups.has(String(node.group))) {
+            // Draw curved arc segment along the orbit between these two nodes
+            const group = groups[node.group];
+            if (!group) continue;
+            const radius = orbitRadii[node.orbit] || 0;
+            if (radius === 0) continue;
+            const count = skillsPerOrbit[node.orbit] || 1;
+
+            // Compute angles (same formula as processNodes)
+            const a1 = 2 * Math.PI * node.orbitIndex / count;
+            const a2 = 2 * Math.PI * targetNode.orbitIndex / count;
+
+            // Find shorter arc direction
+            let diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+
+            // Break arc into small segments, draw line connector for each
+            const arcLen = Math.abs(diff) * radius;
+            const segments = Math.max(8, Math.ceil(arcLen / 30));
+
+            for (let i = 0; i < segments; i++) {
+              const t1 = a1 + diff * (i / segments);
+              const t2 = a1 + diff * ((i + 1) / segments);
+              const x1 = group.x + radius * Math.sin(t1);
+              const y1 = group.y - radius * Math.cos(t1);
+              const x2 = group.x + radius * Math.sin(t2);
+              const y2 = group.y - radius * Math.cos(t2);
+
+              const sdx = x2 - x1;
+              const sdy = y2 - y1;
+              const segDist = Math.sqrt(sdx * sdx + sdy * sdy);
+              const segAngle = Math.atan2(sdy, sdx);
+
+              ctx!.save();
+              ctx!.translate((x1 + x2) / 2, (y1 + y2) / 2);
+              ctx!.rotate(segAngle);
+              ctx!.drawImage(
+                lineAtlas,
+                lineCoords.x, lineCoords.y, lineCoords.w, lineCoords.h,
+                -segDist / 2, -lineHeight / 2, segDist, lineHeight
+              );
+              ctx!.restore();
+            }
+            continue;
+          }
+
+          // Draw straight line connector
+          const dx = targetPos.x - pos.x;
+          const dy = targetPos.y - pos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+
+          ctx!.save();
+          ctx!.translate((pos.x + targetPos.x) / 2, (pos.y + targetPos.y) / 2);
+          ctx!.rotate(angle);
+          ctx!.drawImage(
+            lineAtlas,
+            lineCoords.x, lineCoords.y, lineCoords.w, lineCoords.h,
+            -distance / 2, -lineHeight / 2, distance, lineHeight
+          );
+          ctx!.restore();
+        }
+      }
+    }
+
+    function renderNodes() {
+      if (!treeData || !spritesData) return;
+
+      // Render sizes in tree coordinate units
+      const sizes: Record<string, { icon: number; frame: number }> = {
+        normal:     { icon: 75,  frame: 100 },
+        notable:    { icon: 120, frame: 155 },
+        keystone:   { icon: 170, frame: 220 },
+        mastery:    { icon: 200, frame: 0 },
+        jewel:      { icon: 110, frame: 145 },
+        ascNotable: { icon: 100, frame: 135 },
+        ascSmall:   { icon: 75,  frame: 100 },
+      };
+
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (node.classStartIndex !== undefined) continue;
+
+        const isAsc = !!node.ascendancyName;
+
+        // Determine node type
+        let type = 'normal';
+        if (node.isKeystone) type = 'keystone';
+        else if (node.isNotable) type = isAsc ? 'ascNotable' : 'notable';
+        else if (node.isMastery) type = 'mastery';
+        else if (node.isJewelSocket) type = 'jewel';
+        else if (isAsc) type = 'ascSmall';
+
+        const size = sizes[type] || sizes.normal;
+        const halfIcon = size.icon / 2;
+        const halfFrame = size.frame / 2;
+
+        // 1. Draw icon
+        if (type === 'mastery' && node.inactiveIcon) {
+          drawSprite('masteryConnected', node.inactiveIcon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+        } else if (node.icon) {
+          // Look up icon in the appropriate skills atlas (inactive by default)
+          let iconCategory: string;
+          if (type === 'keystone') iconCategory = 'keystoneInactive';
+          else if (type === 'notable' || type === 'ascNotable') iconCategory = 'notableInactive';
+          else iconCategory = 'normalInactive';
+
+          drawSprite(iconCategory, node.icon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+        }
+
+        // 2. Draw frame on top
+        if (size.frame > 0) {
+          let frameName = '';
+          let frameCategory = 'frame';
+
+          if (type === 'ascNotable') {
+            frameName = 'AscendancyFrameLargeNormal';
+            frameCategory = 'ascendancy';
+          } else if (type === 'ascSmall') {
+            frameName = 'AscendancyFrameSmallNormal';
+            frameCategory = 'ascendancy';
+          } else if (type === 'keystone') {
+            frameName = 'KeystoneFrameUnallocated';
+          } else if (type === 'notable') {
+            frameName = 'NotableFrameUnallocated';
+          } else if (type === 'jewel') {
+            frameName = 'JewelFrameUnallocated';
+          } else {
+            frameName = 'PSSkillFrame';
+          }
+
+          drawSprite(frameCategory, frameName, pos.x - halfFrame, pos.y - halfFrame, size.frame, size.frame);
+        }
+      }
+    }
+
+    // ==========================================
+    // VIEW CONTROLS
+    // ==========================================
+    function resizeCanvas() {
+      if (!viewer || !canvas) return;
+      const rect = viewer.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      render();
+    }
+
+    function centerView() {
+      panX = 0;
+      panY = 0;
+      zoom = 0.05;
+      if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 1000)}%`;
+    }
+
+    function onPointerDown(e: PointerEvent) {
+      isPanning = true;
+      panStartX = e.clientX - panX;
+      panStartY = e.clientY - panY;
+      viewer?.setPointerCapture(e.pointerId);
+    }
+
+    function onPointerMove(e: PointerEvent) {
+      if (!isPanning) return;
+      panX = e.clientX - panStartX;
+      panY = e.clientY - panStartY;
+      render();
+    }
+
+    function onPointerUp(e: PointerEvent) {
+      isPanning = false;
+      viewer?.releasePointerCapture(e.pointerId);
+    }
+
+    function onWheel(e: WheelEvent) {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left - canvas.width / 2 - panX;
+      const mouseY = e.clientY - rect.top - canvas.height / 2 - panY;
+
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      const newZoom = Math.max(0.01, Math.min(0.5, zoom * zoomFactor));
+
+      if (newZoom !== zoom) {
+        const scale = newZoom / zoom;
+        panX = panX - mouseX * (scale - 1);
+        panY = panY - mouseY * (scale - 1);
+        zoom = newZoom;
+        if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 1000)}%`;
+        render();
+      }
+    }
+
+    // Events
+    viewer.addEventListener('pointerdown', onPointerDown);
+    viewer.addEventListener('pointermove', onPointerMove);
+    viewer.addEventListener('pointerup', onPointerUp);
+    viewer.addEventListener('pointerleave', onPointerUp);
+    viewer.addEventListener('wheel', onWheel, { passive: false });
+    viewer.addEventListener('contextmenu', (e) => e.preventDefault());
+    resetBtn?.addEventListener('click', () => { centerView(); render(); });
+    window.addEventListener('resize', resizeCanvas);
+
+    // Init
+    console.log('[PT2] Initializing...');
+    resizeCanvas();
+    init();
+
+  })();
+</script>
