@@ -656,6 +656,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       isKeystone?: boolean;
       isMastery?: boolean;
       isJewelSocket?: boolean;
+      expansionJewel?: { size: number; index: number; proxy: string; parent?: string };
       isBloodline?: boolean;
       isMultipleChoiceOption?: boolean;
       ascendancyName?: string;
@@ -1299,6 +1300,9 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         keystone:   { icon: 170, frame: 220 },
         mastery:    { icon: 200, frame: 0 },
         jewel:      { icon: 110, frame: 145 },
+        clusterSmall:  { icon: 110, frame: 145 },
+        clusterMedium: { icon: 110, frame: 145 },
+        clusterLarge:  { icon: 110, frame: 145 },
         ascNotable: { icon: 100, frame: 135 },
         ascSmall:   { icon: 75,  frame: 100 },
       };
@@ -1316,6 +1320,10 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         if (node.isKeystone) type = 'keystone';
         else if (node.isNotable) type = isAsc ? 'ascNotable' : 'notable';
         else if (node.isMastery) type = 'mastery';
+        else if (node.isJewelSocket && node.expansionJewel) {
+          const s = node.expansionJewel.size;
+          type = s === 2 ? 'clusterLarge' : s === 1 ? 'clusterMedium' : 'clusterSmall';
+        }
         else if (node.isJewelSocket) type = 'jewel';
         else if (isAsc) type = 'ascSmall';
 
@@ -1382,6 +1390,12 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
             frameName = isAllocated ? 'NotableFrameAllocated' : 'NotableFrameUnallocated';
           } else if (type === 'jewel') {
             frameName = isAllocated ? 'JewelFrameAllocated' : 'JewelFrameUnallocated';
+          } else if (type === 'clusterSmall') {
+            frameName = isAllocated ? 'JewelSocketAltActive' : 'JewelSocketClusterAltNormal1Small';
+          } else if (type === 'clusterMedium') {
+            frameName = isAllocated ? 'JewelSocketAltActive' : 'JewelSocketClusterAltNormal1Medium';
+          } else if (type === 'clusterLarge') {
+            frameName = isAllocated ? 'JewelSocketAltActive' : 'JewelSocketClusterAltNormal1Large';
           } else {
             frameName = isAllocated ? 'PSSkillFrameActive' : 'PSSkillFrame';
           }
@@ -1523,6 +1537,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
           keystone: 110,
           mastery: 100,
           jewel: 72,
+          clusterSmall: 72, clusterMedium: 72, clusterLarge: 72,
           ascNotable: 67,
           ascSmall: 50,
         };
@@ -1541,6 +1556,10 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
           if (node.isKeystone) type = 'keystone';
           else if (node.isNotable) type = node.ascendancyName ? 'ascNotable' : 'notable';
           else if (node.isMastery) type = 'mastery';
+          else if (node.isJewelSocket && node.expansionJewel) {
+            const s = node.expansionJewel.size;
+            type = s === 2 ? 'clusterLarge' : s === 1 ? 'clusterMedium' : 'clusterSmall';
+          }
           else if (node.isJewelSocket) type = 'jewel';
           else if (node.ascendancyName) type = 'ascSmall';
 
@@ -2086,7 +2105,8 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
 
       const hitRadii: Record<string, number> = {
         normal: 50, notable: 65, keystone: 110, mastery: 100,
-        jewel: 72, ascNotable: 67, ascSmall: 50,
+        jewel: 72, clusterSmall: 72, clusterMedium: 72, clusterLarge: 72,
+        ascNotable: 67, ascSmall: 50,
       };
 
       let closestId: string | null = null;
@@ -2102,6 +2122,10 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         if (node.isKeystone) type = 'keystone';
         else if (node.isNotable) type = node.ascendancyName ? 'ascNotable' : 'notable';
         else if (node.isMastery) type = 'mastery';
+        else if (node.isJewelSocket && node.expansionJewel) {
+          const s = node.expansionJewel.size;
+          type = s === 2 ? 'clusterLarge' : s === 1 ? 'clusterMedium' : 'clusterSmall';
+        }
         else if (node.isJewelSocket) type = 'jewel';
         else if (node.ascendancyName) type = 'ascSmall';
 
