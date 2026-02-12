@@ -1,0 +1,1690 @@
+---
+/**
+ * PASSIVE TREE EDITOR (Admin Tool)
+ *
+ * Hidden admin tool for visually allocating passive tree nodes per build progression.
+ * Based on V2 viewer rendering with added interactivity (click-to-allocate).
+ * Password-protected with SHA-256 hash comparison + localStorage caching.
+ *
+ * Route: /admin/tree-editor/ (not linked in navigation)
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Navigation from '../../components/Navigation.astro';
+import skillsRaw from '../../data/skills.json';
+const skillsJsonStr = JSON.stringify(skillsRaw);
+---
+
+<BaseLayout title="Tree Editor">
+  <Navigation slot="header" />
+  <script is:inline define:vars={{ skillsJsonStr }}>
+    window.__SKILLS_DATA__ = JSON.parse(skillsJsonStr);
+  </script>
+
+  <!-- Password Gate -->
+  <div class="te-auth-gate" id="te-auth-gate">
+    <div class="te-auth-box">
+      <h2 class="te-auth-title">Admin Access</h2>
+      <p class="te-auth-desc">Enter the admin password to access the tree editor.</p>
+      <div class="te-auth-field">
+        <input type="password" id="te-auth-input" class="te-auth-input" placeholder="Password" autocomplete="off" />
+        <button class="te-auth-btn" id="te-auth-btn">Unlock</button>
+      </div>
+      <p class="te-auth-error" id="te-auth-error"></p>
+    </div>
+  </div>
+
+  <!-- Editor (hidden until auth) -->
+  <section class="te-page" id="te-editor" style="display:none">
+    <div class="te-layout">
+      <!-- Sidebar -->
+      <div class="te-sidebar">
+        <div class="te-sidebar-section">
+          <label class="te-label">Class</label>
+          <select id="te-class-select" class="te-select"></select>
+        </div>
+        <div class="te-sidebar-section">
+          <label class="te-label">Ascendancy</label>
+          <select id="te-asc-select" class="te-select">
+            <option value="">(None)</option>
+          </select>
+        </div>
+
+        <div class="te-divider"></div>
+
+        <div class="te-sidebar-section">
+          <label class="te-label">Loadout</label>
+          <select id="te-loadout-select" class="te-select"></select>
+        </div>
+        <div class="te-sidebar-section">
+          <label class="te-label">Progression</label>
+          <select id="te-progression-select" class="te-select"></select>
+        </div>
+
+        <div class="te-divider"></div>
+
+        <div class="te-sidebar-section">
+          <label class="te-label">Points</label>
+          <div class="te-counters">
+            <div class="te-counter">
+              <span class="te-counter-label">Main</span>
+              <span class="te-counter-value" id="te-main-points">0 / 123</span>
+            </div>
+            <div class="te-counter">
+              <span class="te-counter-label">Ascendancy</span>
+              <span class="te-counter-value" id="te-asc-points">0 / 8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="te-divider"></div>
+
+        <div class="te-sidebar-section te-actions">
+          <button class="te-action-btn te-btn-primary" id="te-load-btn">Load from Progression</button>
+          <button class="te-action-btn te-btn-accent" id="te-copy-btn">Copy treeData JSON</button>
+          <button class="te-action-btn" id="te-download-btn">Download skills.json</button>
+          <button class="te-action-btn te-btn-danger" id="te-reset-btn">Reset All Nodes</button>
+        </div>
+
+        <div class="te-divider"></div>
+
+        <div class="te-sidebar-section">
+          <label class="te-label">Info</label>
+          <p class="te-info" id="te-info">Click nodes to allocate/deallocate. Use sidebar to load/save.</p>
+        </div>
+      </div>
+
+      <!-- Canvas Area -->
+      <div class="te-canvas-area">
+        <div class="te-header">
+          <span class="te-title">Passive Tree Editor</span>
+          <div class="te-controls">
+            <span class="te-zoom-label">Zoom: <span id="te-zoom-value">100%</span></span>
+            <button class="te-btn" id="te-view-reset-btn" title="Reset View">&#x27F2;</button>
+          </div>
+        </div>
+
+        <div class="te-viewer" id="te-viewer">
+          <canvas id="te-canvas"></canvas>
+          <div class="te-loading" id="te-loading">
+            <div class="te-spinner"></div>
+            <span id="te-loading-text">Loading passive tree...</span>
+          </div>
+        </div>
+
+        <div class="te-footer">
+          <span class="te-stat" id="te-stat-nodes">Nodes: 0</span>
+          <span class="te-stat" id="te-stat-groups">Groups: 0</span>
+          <span class="te-stat" id="te-stat-allocated">Allocated: 0</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Auth Gate */
+  .te-auth-gate {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0f;
+  }
+  .te-auth-gate.hidden { display: none; }
+  .te-auth-box {
+    background: #0d0d14;
+    border: 1px solid #1a1a25;
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+  }
+  .te-auth-title {
+    color: #c8b07a;
+    font-size: 1.2rem;
+    margin: 0 0 0.5rem;
+  }
+  .te-auth-desc {
+    color: #606070;
+    font-size: 0.85rem;
+    margin: 0 0 1.5rem;
+  }
+  .te-auth-field {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .te-auth-input {
+    flex: 1;
+    padding: 0.6rem 0.8rem;
+    background: #101018;
+    border: 1px solid #2a2a35;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .te-auth-input:focus { border-color: #c8b07a; }
+  .te-auth-btn {
+    padding: 0.6rem 1.2rem;
+    background: #c8b07a;
+    border: none;
+    border-radius: 4px;
+    color: #0a0a0f;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .te-auth-btn:hover { opacity: 0.85; }
+  .te-auth-error {
+    color: #e04040;
+    font-size: 0.8rem;
+    margin: 0.75rem 0 0;
+    min-height: 1.2em;
+  }
+
+  /* Editor Layout */
+  .te-page {
+    min-height: calc(100vh - 60px);
+    background: #0a0a0f;
+  }
+  .te-layout {
+    display: flex;
+    height: calc(100vh - 60px);
+  }
+
+  /* Sidebar */
+  .te-sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: #0d0d14;
+    border-right: 1px solid #1a1a25;
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .te-sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .te-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #606070;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .te-select {
+    padding: 0.5rem 0.6rem;
+    background: #101018;
+    border: 1px solid #2a2a35;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 0.85rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .te-select:focus { border-color: #c8b07a; }
+  .te-divider {
+    height: 1px;
+    background: #1a1a25;
+    margin: 0.5rem 0;
+  }
+  .te-counters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .te-counter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.6rem;
+    background: #101018;
+    border-radius: 4px;
+  }
+  .te-counter-label {
+    font-size: 0.8rem;
+    color: #808090;
+  }
+  .te-counter-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #c8b07a;
+  }
+  .te-actions {
+    gap: 0.4rem;
+  }
+  .te-action-btn {
+    padding: 0.55rem 0.8rem;
+    background: #1a1a24;
+    border: 1px solid #2a2a35;
+    border-radius: 4px;
+    color: #a0a0b0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  .te-action-btn:hover { background: #252530; color: #e0e0e0; }
+  .te-btn-primary { border-color: #3a5a8a; color: #6a9fd8; }
+  .te-btn-primary:hover { background: #1a2a40; color: #8ab8e8; }
+  .te-btn-accent { border-color: #5a4a2a; color: #c8b07a; }
+  .te-btn-accent:hover { background: #2a2418; color: #d8c08a; }
+  .te-btn-danger { border-color: #5a2a2a; color: #d06060; }
+  .te-btn-danger:hover { background: #2a1818; color: #e07070; }
+  .te-info {
+    font-size: 0.75rem;
+    color: #505060;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Canvas Area */
+  .te-canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .te-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #101018;
+    border-bottom: 1px solid #1a1a25;
+  }
+  .te-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c8b07a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .te-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .te-zoom-label {
+    font-size: 0.75rem;
+    color: #606070;
+  }
+  .te-btn {
+    background: #1a1a24;
+    border: 1px solid #2a2a35;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    color: #808090;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+  }
+  .te-btn:hover { background: #252530; color: #c8b07a; }
+  .te-viewer {
+    position: relative;
+    flex: 1;
+    background: #05050a;
+    cursor: grab;
+  }
+  .te-viewer:active { cursor: grabbing; }
+  #te-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .te-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: rgba(5, 5, 10, 0.9);
+    color: #606070;
+    font-size: 0.9rem;
+  }
+  .te-loading.hidden { display: none; }
+  .te-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #1a1a25;
+    border-top-color: #c8b07a;
+    border-radius: 50%;
+    animation: te-spin 1s linear infinite;
+  }
+  @keyframes te-spin { to { transform: rotate(360deg); } }
+  .te-footer {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.6rem 1rem;
+    background: #101018;
+    border-top: 1px solid #1a1a25;
+  }
+  .te-stat {
+    font-size: 0.75rem;
+    color: #606070;
+  }
+</style>
+
+<script>
+  /**
+   * PASSIVE TREE EDITOR
+   *
+   * Based on V2 viewer with added:
+   * - Node allocation state (click to toggle)
+   * - Active/inactive sprite rendering
+   * - Sidebar with loadout/progression picker
+   * - Save/load treeData JSON
+   */
+  (function() {
+    'use strict';
+
+    const BASE_URL = import.meta.env.BASE_URL || '/';
+
+    // ==========================================
+    // AUTH
+    // ==========================================
+    const PASS_HASH = '65d105253d80116c311f238340feb30076e40f02c9cf7ada10cb7c8afa0bbed4'; // sha256("emiracle-admin")
+    const AUTH_KEY = 'te-auth-token';
+
+    const authGate = document.getElementById('te-auth-gate');
+    const authInput = document.getElementById('te-auth-input') as HTMLInputElement;
+    const authBtn = document.getElementById('te-auth-btn');
+    const authError = document.getElementById('te-auth-error');
+    const editorEl = document.getElementById('te-editor');
+
+    async function sha256(text: string): Promise<string> {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function tryAuth(password: string): Promise<boolean> {
+      const hash = await sha256(password);
+      return hash === PASS_HASH;
+    }
+
+    function unlock() {
+      authGate?.classList.add('hidden');
+      if (editorEl) editorEl.style.display = '';
+      localStorage.setItem(AUTH_KEY, 'true');
+      initEditor();
+    }
+
+    // ==========================================
+    // TYPES
+    // ==========================================
+    interface SpriteCoord {
+      x: number; y: number; w: number; h: number;
+    }
+    interface SpriteCategory {
+      filename: string;
+      w: number;
+      h: number;
+      coords: Record<string, SpriteCoord>;
+    }
+    interface SpritesData {
+      sprites: Record<string, SpriteCategory>;
+      extraImages?: any[];
+    }
+    interface TreeNode {
+      skill?: number;
+      name?: string;
+      icon?: string;
+      stats?: string[];
+      group: number;
+      orbit: number;
+      orbitIndex: number;
+      out?: string[];
+      in?: string[];
+      isNotable?: boolean;
+      isKeystone?: boolean;
+      isMastery?: boolean;
+      isJewelSocket?: boolean;
+      isBloodline?: boolean;
+      isMultipleChoiceOption?: boolean;
+      ascendancyName?: string;
+      isAscendancyStart?: boolean;
+      classStartIndex?: number;
+      inactiveIcon?: string;
+    }
+    interface TreeGroup {
+      x: number;
+      y: number;
+      orbits: number[];
+      nodes: string[];
+      background?: { image: string; isHalfImage?: boolean };
+      isProxy?: boolean;
+    }
+    interface TreeData {
+      nodes: Record<string, TreeNode>;
+      groups: Record<string, TreeGroup>;
+      constants: {
+        orbitRadii: number[];
+        skillsPerOrbit: number[];
+        PSSCentreInnerRadius: number;
+      };
+      min_x: number; min_y: number;
+      max_x: number; max_y: number;
+      classes: any[];
+    }
+    interface SkillsLoadout {
+      name: string;
+      description?: string;
+      defaultProgression: string;
+      progressions: Record<string, {
+        name: string;
+        passiveTree: { plannerUrl: string; treeData: string };
+        [key: string]: any;
+      }>;
+    }
+    interface SkillsJson {
+      version: string;
+      loadouts: Record<string, SkillsLoadout>;
+    }
+
+    // ==========================================
+    // EDITOR STATE
+    // ==========================================
+    let treeData: TreeData | null = null;
+    let spritesData: SpritesData | null = null;
+    let skillsData: SkillsJson | null = null;
+    const atlases: Record<string, HTMLImageElement> = {};
+    const nodePositions = new Map<string, { x: number; y: number; node: TreeNode }>();
+    const ascendancyGroups = new Map<string, string>();
+    const ascStartGroups = new Map<string, string>();
+    const classStartGroups = new Map<string, string>();
+    const lineOnlyGroups = new Set<string>([]);
+
+    // Allocation state
+    const allocatedNodes = new Set<string>();
+
+    // Adjacency graph: nodeId -> Set of connected nodeIds (bidirectional, skipping classStart/mastery)
+    const adjacency = new Map<string, Set<string>>();
+
+    // Class/ascendancy state
+    let selectedClass = '';       // e.g. "Marauder"
+    let selectedAscendancy = '';  // e.g. "Chieftain" or "" for none
+    let classStartNodeId = '';    // the classStartIndex center node for selected class
+    // Map: className (from treeData.classes) -> classStartIndex nodeId
+    const classToStartNode = new Map<string, string>();
+    // Map: className -> list of ascendancy names
+    const classAscendancies = new Map<string, string[]>();
+
+    // View state
+    let panX = 0;
+    let panY = 0;
+    let zoom = 0.05;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    // Currently selected loadout/progression
+    let currentLoadout = '';
+    let currentProgression = '';
+
+    // DOM refs (editor)
+    let viewer: HTMLElement | null = null;
+    let canvas: HTMLCanvasElement | null = null;
+    let ctx: CanvasRenderingContext2D | null = null;
+    let loadingEl: HTMLElement | null = null;
+    let loadingText: HTMLElement | null = null;
+    let zoomValue: HTMLElement | null = null;
+
+    // ==========================================
+    // EDITOR INIT
+    // ==========================================
+    let editorInitialized = false;
+
+    async function initEditor() {
+      if (editorInitialized) return;
+      editorInitialized = true;
+
+      viewer = document.getElementById('te-viewer');
+      canvas = document.getElementById('te-canvas') as HTMLCanvasElement;
+      if (!viewer || !canvas) return;
+      ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      loadingEl = document.getElementById('te-loading');
+      loadingText = document.getElementById('te-loading-text');
+      zoomValue = document.getElementById('te-zoom-value');
+
+      // Setup event listeners
+      setupViewControls();
+      setupClickHandler();
+      setupSidebar();
+
+      // Load data
+      try {
+        setLoadingText('Loading tree data...');
+        const [treeResp, spritesResp] = await Promise.all([
+          fetch(`${BASE_URL}data/pob-tree.json`),
+          fetch(`${BASE_URL}data/pob-sprites.json`),
+        ]);
+        treeData = await treeResp.json();
+        spritesData = await spritesResp.json();
+
+        // Load skills.json from build-time injected data
+        skillsData = (window as any).__SKILLS_DATA__ || null;
+
+        console.log('[TE] Tree loaded:', Object.keys(treeData!.nodes).length, 'nodes');
+
+        setLoadingText('Loading textures...');
+        await loadAtlases();
+
+        setLoadingText('Processing nodes...');
+        processNodes();
+
+        centerView();
+        render();
+        updateStats();
+        populateSidebar();
+      } catch (err) {
+        console.error('[TE] Init error:', err);
+        setLoadingText(`Error: ${err}`);
+        return;
+      }
+      loadingEl?.classList.add('hidden');
+    }
+
+    function setLoadingText(text: string) {
+      if (loadingText) loadingText.textContent = text;
+    }
+
+    // ==========================================
+    // DATA LOADING (same as V2)
+    // ==========================================
+    async function loadAtlases() {
+      if (!spritesData) return;
+
+      const cdnToLocal: Record<string, string> = {};
+      for (const [key, cat] of Object.entries(spritesData.sprites)) {
+        const url = cat.filename;
+        const match = url.match(/\/([^/?]+)(\?|$)/);
+        if (match) {
+          cdnToLocal[key] = `data/assets/${match[1]}`;
+        }
+      }
+
+      const localAssets: Record<string, string> = {
+        'PSGroupBackground1': 'data/assets/backgrounds/PSGroupBackground1.png',
+        'PSGroupBackground2': 'data/assets/backgrounds/PSGroupBackground2.png',
+        'PSGroupBackground3': 'data/assets/backgrounds/PSGroupBackground3.png',
+      };
+
+      const classNames = ['duelist','marauder','ranger','scion','shadow','templar','witch'];
+      for (const name of classNames) {
+        localAssets[`center${name}`] = `data/assets/classes/center${name}.png`;
+      }
+
+      const allAssets = { ...cdnToLocal, ...localAssets };
+      const promises: Promise<void>[] = [];
+
+      for (const [key, path] of Object.entries(allAssets)) {
+        promises.push(new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => { atlases[key] = img; resolve(); };
+          img.onerror = () => { console.warn(`[TE] Failed to load: ${key} (${path})`); resolve(); };
+          img.src = `${BASE_URL}${path}`;
+        }));
+      }
+
+      await Promise.all(promises);
+      console.log('[TE] Atlases loaded:', Object.keys(atlases).length, '/', Object.keys(allAssets).length);
+    }
+
+    // ==========================================
+    // NODE PROCESSING (same as V2)
+    // ==========================================
+    function processNodes() {
+      if (!treeData) return;
+      const { nodes, groups, constants } = treeData;
+      const { orbitRadii, skillsPerOrbit } = constants;
+
+      nodePositions.clear();
+
+      for (const [nodeId, node] of Object.entries(nodes)) {
+        if (nodeId === 'root') continue;
+        if (node.group === undefined) continue;
+
+        const group = groups[node.group];
+        if (!group) continue;
+        if (group.isProxy) continue;
+
+        const orbit = node.orbit ?? 0;
+        const orbitIndex = node.orbitIndex ?? 0;
+        const radius = orbitRadii[orbit] ?? 0;
+        const skillCount = skillsPerOrbit[orbit] ?? 1;
+
+        const angle = (2 * Math.PI * orbitIndex) / skillCount;
+        const x = group.x + radius * Math.sin(angle);
+        const y = group.y - radius * Math.cos(angle);
+
+        nodePositions.set(nodeId, { x, y, node });
+      }
+
+      ascendancyGroups.clear();
+      ascStartGroups.clear();
+      for (const [_nid, n] of Object.entries(nodes)) {
+        if (n.ascendancyName && n.group !== undefined) {
+          ascendancyGroups.set(String(n.group), n.ascendancyName);
+        }
+        if (n.isAscendancyStart && n.ascendancyName && n.group !== undefined) {
+          ascStartGroups.set(n.ascendancyName, String(n.group));
+        }
+      }
+
+      classStartGroups.clear();
+      for (const [_nid, n] of Object.entries(nodes)) {
+        if (n.classStartIndex !== undefined && n.group !== undefined) {
+          const cls = treeData!.classes?.[n.classStartIndex];
+          if (cls?.name) {
+            classStartGroups.set(String(n.group), cls.name.toLowerCase());
+          }
+        }
+      }
+
+      // Build adjacency graph (bidirectional, skip classStart/mastery nodes)
+      adjacency.clear();
+      for (const [nodeId, node] of Object.entries(nodes)) {
+        if (nodeId === 'root') continue;
+        if (node.classStartIndex !== undefined) continue;
+        if (node.isMastery) continue;
+        if (node.isMultipleChoiceOption) continue;
+        if (!nodePositions.has(nodeId)) continue;
+
+        if (!adjacency.has(nodeId)) adjacency.set(nodeId, new Set());
+
+        const connections = [...(node.out || []), ...(node.in || [])];
+        for (const otherId of connections) {
+          const oid = String(otherId);
+          const otherNode = nodes[oid];
+          if (!otherNode) continue;
+          if (otherNode.classStartIndex !== undefined) continue;
+          if (otherNode.isMastery) continue;
+          if (otherNode.isMultipleChoiceOption) continue;
+          if (!nodePositions.has(oid)) continue;
+
+          adjacency.get(nodeId)!.add(oid);
+          if (!adjacency.has(oid)) adjacency.set(oid, new Set());
+          adjacency.get(oid)!.add(nodeId);
+        }
+      }
+
+      // Build class -> startNodeId mapping
+      // The classStartIndex center node connects to the first allocatable nodes
+      // We need to find the nodes connected TO the classStart center node (those are the real starting nodes)
+      classToStartNode.clear();
+      classAscendancies.clear();
+      for (const [nodeId, node] of Object.entries(nodes)) {
+        if (node.classStartIndex !== undefined) {
+          const cls = treeData!.classes?.[node.classStartIndex];
+          if (cls?.name) {
+            classToStartNode.set(cls.name, nodeId);
+            // Collect ascendancies for this class
+            const ascNames: string[] = [];
+            if (cls.ascendancies) {
+              for (const asc of cls.ascendancies) {
+                if (asc?.name) ascNames.push(asc.name);
+              }
+            }
+            classAscendancies.set(cls.name, ascNames);
+          }
+        }
+      }
+
+      console.log('[TE] Processed', nodePositions.size, 'node positions,', adjacency.size, 'in adjacency graph');
+    }
+
+    // ==========================================
+    // SPRITE HELPERS (same as V2)
+    // ==========================================
+    function getCoords(category: string, key: string): SpriteCoord | null {
+      const cat = spritesData?.sprites?.[category];
+      if (!cat) return null;
+      return cat.coords?.[key] ?? null;
+    }
+
+    function getAtlas(category: string): HTMLImageElement | null {
+      return atlases[category] ?? null;
+    }
+
+    function drawSprite(category: string, key: string, dx: number, dy: number, dw: number, dh: number) {
+      const atlas = getAtlas(category);
+      const coords = getCoords(category, key);
+      if (!atlas || !coords) return false;
+      ctx!.drawImage(atlas, coords.x, coords.y, coords.w, coords.h, dx, dy, dw, dh);
+      return true;
+    }
+
+    // ==========================================
+    // RENDERING
+    // ==========================================
+    /** Check if a node should be visible given current class/ascendancy selection */
+    function isNodeVisible(node: TreeNode): boolean {
+      if (!node.ascendancyName) return true; // main tree always visible
+      if (!selectedAscendancy) return false;  // no ascendancy selected -> hide all asc nodes
+      return node.ascendancyName === selectedAscendancy;
+    }
+
+    function render() {
+      if (!ctx || !canvas || !treeData) return;
+
+      ctx.fillStyle = '#070710';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(canvas.width / 2 + panX, canvas.height / 2 + panY);
+      ctx.scale(zoom, zoom);
+
+      renderBackground();
+      renderGroupBackgrounds();
+      renderConnections();
+      renderNodes();
+
+      ctx.restore();
+    }
+
+    function renderBackground() {
+      const coords = getCoords('background', 'Background2');
+      const atlas = getAtlas('background');
+      if (!coords || !atlas) return;
+
+      const tileSize = coords.w * 3;
+      const pad = 2000;
+      const minX = treeData!.min_x - pad;
+      const maxX = treeData!.max_x + pad;
+      const minY = treeData!.min_y - pad;
+      const maxY = treeData!.max_y + pad;
+
+      ctx!.globalAlpha = 0.25;
+      for (let x = minX; x < maxX; x += tileSize) {
+        for (let y = minY; y < maxY; y += tileSize) {
+          ctx!.drawImage(atlas, coords.x, coords.y, coords.w, coords.h, x, y, tileSize, tileSize);
+        }
+      }
+      ctx!.globalAlpha = 1.0;
+    }
+
+    function renderGroupBackgrounds() {
+      if (!treeData) return;
+      const groups = treeData.groups;
+
+      for (const [gid, group] of Object.entries(groups)) {
+        if (group.isProxy) continue;
+
+        const ascName = ascendancyGroups.get(gid);
+        if (ascName) {
+          // Only show selected ascendancy background
+          if (selectedAscendancy && ascName === selectedAscendancy && ascStartGroups.get(ascName) === gid) {
+            const spriteKey = `Classes${ascName}`;
+            const coords = getCoords('ascendancy', spriteKey);
+            const atlas = getAtlas('ascendancy');
+            if (coords && atlas) {
+              const scale = 2.6;
+              const w = coords.w * scale;
+              const h = coords.h * scale;
+              ctx!.save();
+              ctx!.translate(group.x, group.y);
+              ctx!.drawImage(atlas, coords.x, coords.y, coords.w, coords.h, -w / 2, -h / 2, w, h);
+              ctx!.restore();
+            }
+          }
+          continue;
+        }
+
+        const className = classStartGroups.get(gid);
+        if (className) {
+          const bgImg = atlases[`center${className}`] as HTMLImageElement | undefined;
+          if (bgImg) {
+            const scale = 2.6;
+            const w = bgImg.width * scale;
+            const h = bgImg.height * scale;
+            ctx!.save();
+            ctx!.translate(group.x, group.y);
+            ctx!.drawImage(bgImg, -w / 2, -h / 2, w, h);
+            ctx!.restore();
+          }
+          continue;
+        }
+
+        if (!group.background?.image) continue;
+
+        const bgName = group.background.image;
+        const bgImg = atlases[bgName] as HTMLImageElement | undefined;
+        if (!bgImg) continue;
+
+        const isHalf = group.background.isHalfImage;
+        const scale = 2.6;
+        const w = bgImg.width * scale;
+        const h = bgImg.height * scale;
+
+        ctx!.save();
+        ctx!.translate(group.x, group.y);
+
+        if (isHalf) {
+          ctx!.drawImage(bgImg, -w / 2, -h, w, h);
+          ctx!.save();
+          ctx!.scale(1, -1);
+          ctx!.drawImage(bgImg, -w / 2, -h, w, h);
+          ctx!.restore();
+        } else {
+          ctx!.drawImage(bgImg, -w / 2, -h / 2, w, h);
+        }
+
+        ctx!.restore();
+      }
+    }
+
+    function renderConnections() {
+      if (!treeData || !spritesData) return;
+
+      const lineAtlas = getAtlas('line');
+      const lineNormalCoords = getCoords('line', 'LineConnectorNormal');
+      const lineActiveCoords = getCoords('line', 'LineConnectorActive');
+      if (!lineAtlas || !lineNormalCoords) return;
+
+      const { orbitRadii, skillsPerOrbit } = treeData.constants;
+      const groups = treeData.groups;
+
+      const drawnConnections = new Set<string>();
+
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (node.isMastery) continue;
+        if (node.classStartIndex !== undefined) continue;
+        if (!isNodeVisible(node)) continue;
+
+        const connectedIds = [...(node.out || []), ...(node.in || [])];
+        for (const outId of connectedIds) {
+          const connKey = [nodeId, outId].sort().join('-');
+          if (drawnConnections.has(connKey)) continue;
+          drawnConnections.add(connKey);
+
+          const targetPos = nodePositions.get(String(outId));
+          if (!targetPos) continue;
+          const targetNode = targetPos.node;
+          if (targetNode.isMastery) continue;
+          if (targetNode.classStartIndex !== undefined) continue;
+          if (!isNodeVisible(targetNode)) continue;
+
+          const srcAsc = !!node.ascendancyName;
+          const tgtAsc = !!targetNode.ascendancyName;
+          if (srcAsc !== tgtAsc) continue;
+
+          // Use active line if both nodes are allocated
+          const bothAllocated = allocatedNodes.has(nodeId) && allocatedNodes.has(String(outId));
+          const lineCoords = (bothAllocated && lineActiveCoords) ? lineActiveCoords : lineNormalCoords;
+          const lineHeight = lineCoords.h * 2.6;
+
+          const sameGroup = node.group === targetNode.group;
+          const sameOrbit = node.orbit === targetNode.orbit && node.orbit > 0;
+
+          if (sameGroup && sameOrbit && !lineOnlyGroups.has(String(node.group))) {
+            const group = groups[node.group];
+            if (!group) continue;
+            const radius = orbitRadii[node.orbit] || 0;
+            if (radius === 0) continue;
+            const count = skillsPerOrbit[node.orbit] || 1;
+
+            const a1 = 2 * Math.PI * node.orbitIndex / count;
+            const a2 = 2 * Math.PI * targetNode.orbitIndex / count;
+
+            let diff = a2 - a1;
+            if (diff > Math.PI) diff -= 2 * Math.PI;
+            if (diff < -Math.PI) diff += 2 * Math.PI;
+
+            const arcLen = Math.abs(diff) * radius;
+            const segments = Math.max(8, Math.ceil(arcLen / 30));
+
+            for (let i = 0; i < segments; i++) {
+              const t1 = a1 + diff * (i / segments);
+              const t2 = a1 + diff * ((i + 1) / segments);
+              const x1 = group.x + radius * Math.sin(t1);
+              const y1 = group.y - radius * Math.cos(t1);
+              const x2 = group.x + radius * Math.sin(t2);
+              const y2 = group.y - radius * Math.cos(t2);
+
+              const sdx = x2 - x1;
+              const sdy = y2 - y1;
+              const segDist = Math.sqrt(sdx * sdx + sdy * sdy);
+              const segAngle = Math.atan2(sdy, sdx);
+
+              ctx!.save();
+              ctx!.translate((x1 + x2) / 2, (y1 + y2) / 2);
+              ctx!.rotate(segAngle);
+              ctx!.drawImage(
+                lineAtlas,
+                lineCoords.x, lineCoords.y, lineCoords.w, lineCoords.h,
+                -segDist / 2, -lineHeight / 2, segDist, lineHeight
+              );
+              ctx!.restore();
+            }
+            continue;
+          }
+
+          // Straight line connector
+          const dx = targetPos.x - pos.x;
+          const dy = targetPos.y - pos.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const angle = Math.atan2(dy, dx);
+
+          ctx!.save();
+          ctx!.translate((pos.x + targetPos.x) / 2, (pos.y + targetPos.y) / 2);
+          ctx!.rotate(angle);
+          ctx!.drawImage(
+            lineAtlas,
+            lineCoords.x, lineCoords.y, lineCoords.w, lineCoords.h,
+            -distance / 2, -lineHeight / 2, distance, lineHeight
+          );
+          ctx!.restore();
+        }
+      }
+    }
+
+    function renderNodes() {
+      if (!treeData || !spritesData) return;
+
+      const sizes: Record<string, { icon: number; frame: number }> = {
+        normal:     { icon: 75,  frame: 100 },
+        notable:    { icon: 100, frame: 130 },
+        keystone:   { icon: 170, frame: 220 },
+        mastery:    { icon: 200, frame: 0 },
+        jewel:      { icon: 110, frame: 145 },
+        ascNotable: { icon: 100, frame: 135 },
+        ascSmall:   { icon: 75,  frame: 100 },
+      };
+
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (node.classStartIndex !== undefined) continue;
+        if (!isNodeVisible(node)) continue;
+
+        const isAsc = !!node.ascendancyName;
+        const isAllocated = allocatedNodes.has(nodeId);
+
+        // Determine node type
+        let type = 'normal';
+        if (node.isKeystone) type = 'keystone';
+        else if (node.isNotable) type = isAsc ? 'ascNotable' : 'notable';
+        else if (node.isMastery) type = 'mastery';
+        else if (node.isJewelSocket) type = 'jewel';
+        else if (isAsc) type = 'ascSmall';
+
+        const size = sizes[type] || sizes.normal;
+        const halfIcon = size.icon / 2;
+        const halfFrame = size.frame / 2;
+
+        // 1. Draw icon (active or inactive based on allocation)
+        if (type === 'mastery' && node.inactiveIcon) {
+          drawSprite('masteryConnected', node.inactiveIcon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+        } else if (node.icon) {
+          let iconCategory: string;
+          if (isAllocated) {
+            // Use active sprites for allocated nodes
+            if (type === 'keystone') iconCategory = 'keystoneActive';
+            else if (type === 'notable' || type === 'ascNotable') iconCategory = 'notableActive';
+            else iconCategory = 'normalActive';
+          } else {
+            // Inactive sprites
+            if (type === 'keystone') iconCategory = 'keystoneInactive';
+            else if (type === 'notable' || type === 'ascNotable') iconCategory = 'notableInactive';
+            else iconCategory = 'normalInactive';
+          }
+
+          drawSprite(iconCategory, node.icon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+        }
+
+        // 2. Draw frame (allocated or unallocated)
+        if (size.frame > 0) {
+          let frameName = '';
+          let frameCategory = 'frame';
+
+          if (type === 'ascNotable') {
+            frameName = isAllocated ? 'AscendancyFrameLargeAllocated' : 'AscendancyFrameLargeNormal';
+            frameCategory = 'ascendancy';
+          } else if (type === 'ascSmall') {
+            frameName = isAllocated ? 'AscendancyFrameSmallAllocated' : 'AscendancyFrameSmallNormal';
+            frameCategory = 'ascendancy';
+          } else if (type === 'keystone') {
+            frameName = isAllocated ? 'KeystoneFrameAllocated' : 'KeystoneFrameUnallocated';
+          } else if (type === 'notable') {
+            frameName = isAllocated ? 'NotableFrameAllocated' : 'NotableFrameUnallocated';
+          } else if (type === 'jewel') {
+            frameName = isAllocated ? 'JewelFrameAllocated' : 'JewelFrameUnallocated';
+          } else {
+            frameName = isAllocated ? 'PSSkillFrameActive' : 'PSSkillFrame';
+          }
+
+          drawSprite(frameCategory, frameName, pos.x - halfFrame, pos.y - halfFrame, size.frame, size.frame);
+        }
+      }
+    }
+
+    // ==========================================
+    // CLICK-TO-ALLOCATE
+    // ==========================================
+    function setupClickHandler() {
+      if (!viewer || !canvas) return;
+
+      let pointerDownPos = { x: 0, y: 0 };
+
+      viewer.addEventListener('pointerdown', (e) => {
+        pointerDownPos = { x: e.clientX, y: e.clientY };
+      });
+
+      viewer.addEventListener('pointerup', (e) => {
+        // Only handle clicks (not drags)
+        const dx = e.clientX - pointerDownPos.x;
+        const dy = e.clientY - pointerDownPos.y;
+        if (Math.sqrt(dx * dx + dy * dy) > 5) return; // was a drag
+
+        // Convert screen coords to world coords
+        const rect = canvas!.getBoundingClientRect();
+        const screenX = e.clientX - rect.left;
+        const screenY = e.clientY - rect.top;
+
+        const worldX = (screenX - canvas!.width / 2 - panX) / zoom;
+        const worldY = (screenY - canvas!.height / 2 - panY) / zoom;
+
+        // Find nearest node within hit radius
+        const hitRadii: Record<string, number> = {
+          normal: 50,
+          notable: 65,
+          keystone: 110,
+          mastery: 100,
+          jewel: 72,
+          ascNotable: 67,
+          ascSmall: 50,
+        };
+
+        let closestId: string | null = null;
+        let closestDist = Infinity;
+
+        for (const [nodeId, pos] of nodePositions) {
+          const node = pos.node;
+          if (node.classStartIndex !== undefined) continue;
+          if (node.isMastery) continue;
+          if (node.isMultipleChoiceOption) continue;
+          if (!isNodeVisible(node)) continue;
+
+          // Determine type for hit radius
+          let type = 'normal';
+          if (node.isKeystone) type = 'keystone';
+          else if (node.isNotable) type = node.ascendancyName ? 'ascNotable' : 'notable';
+          else if (node.isJewelSocket) type = 'jewel';
+          else if (node.ascendancyName) type = 'ascSmall';
+
+          const hitR = hitRadii[type] || 50;
+          const ndx = worldX - pos.x;
+          const ndy = worldY - pos.y;
+          const dist = Math.sqrt(ndx * ndx + ndy * ndy);
+
+          if (dist < hitR && dist < closestDist) {
+            closestDist = dist;
+            closestId = nodeId;
+          }
+        }
+
+        if (closestId) {
+          toggleNode(closestId);
+        }
+      });
+    }
+
+    /** Get the set of node IDs directly connected to the class start center node (first allocatable nodes) */
+    function getClassStartNeighbors(): Set<string> {
+      if (!classStartNodeId || !treeData) return new Set();
+      const centerNode = treeData.nodes[classStartNodeId];
+      if (!centerNode) return new Set();
+      const neighbors = new Set<string>();
+      const connections = [...(centerNode.out || []), ...(centerNode.in || [])];
+      for (const id of connections) {
+        const sid = String(id);
+        if (nodePositions.has(sid)) neighbors.add(sid);
+      }
+      return neighbors;
+    }
+
+    /** Check if a node is adjacent to ANY allocated node or to the class start */
+    function isAdjacentToAllocated(nodeId: string): boolean {
+      // Check if adjacent to class start area
+      const startNeighbors = getClassStartNeighbors();
+      if (startNeighbors.has(nodeId)) return true;
+
+      // Check if adjacent to any already-allocated node
+      const neighbors = adjacency.get(nodeId);
+      if (!neighbors) return false;
+      for (const nid of neighbors) {
+        if (allocatedNodes.has(nid)) return true;
+      }
+      return false;
+    }
+
+    /** BFS shortest path from any allocated node (or class start neighbors) to target */
+    function findPathToNode(targetId: string): string[] | null {
+      if (!treeData) return null;
+
+      const targetNode = nodePositions.get(targetId)?.node;
+      if (!targetNode) return null;
+      const targetIsAsc = !!targetNode.ascendancyName;
+
+      // Start nodes for BFS: all allocated nodes + class start neighbor nodes
+      const startSet = new Set<string>(allocatedNodes);
+      const startNeighbors = getClassStartNeighbors();
+      for (const sn of startNeighbors) startSet.add(sn);
+
+      if (startSet.has(targetId)) return [targetId];
+
+      // BFS from target backwards to find nearest allocated/start node
+      const visited = new Map<string, string>(); // nodeId -> parent
+      const queue: string[] = [targetId];
+      visited.set(targetId, '');
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const neighbors = adjacency.get(current);
+        if (!neighbors) continue;
+
+        for (const nid of neighbors) {
+          if (visited.has(nid)) continue;
+
+          // Don't cross ascendancy/main boundary
+          const nNode = nodePositions.get(nid)?.node;
+          if (!nNode) continue;
+          const nIsAsc = !!nNode.ascendancyName;
+          if (nIsAsc !== targetIsAsc) continue;
+
+          // If target is ascendancy, only path through same ascendancy
+          if (targetIsAsc && nNode.ascendancyName && nNode.ascendancyName !== targetNode.ascendancyName) continue;
+
+          visited.set(nid, current);
+
+          if (startSet.has(nid)) {
+            // Reconstruct path from nid to targetId
+            const path: string[] = [];
+            let cur = nid;
+            while (cur !== '') {
+              path.push(cur);
+              cur = visited.get(cur) || '';
+            }
+            // Remove nodes that are already allocated (except we want them for connectivity)
+            // Return only the NEW nodes to allocate
+            return path.filter(id => !allocatedNodes.has(id));
+          }
+
+          queue.push(nid);
+        }
+      }
+
+      return null; // no path found
+    }
+
+    function toggleNode(nodeId: string) {
+      if (!selectedClass) {
+        setInfo('Select a class first before allocating nodes.');
+        return;
+      }
+
+      const pos = nodePositions.get(nodeId);
+      if (!pos) return;
+
+      // If node belongs to a different ascendancy than selected, block it
+      if (pos.node.ascendancyName && selectedAscendancy && pos.node.ascendancyName !== selectedAscendancy) {
+        setInfo(`Cannot allocate: node belongs to ${pos.node.ascendancyName}, not ${selectedAscendancy}.`);
+        return;
+      }
+      // Block ascendancy nodes if no ascendancy selected
+      if (pos.node.ascendancyName && !selectedAscendancy) {
+        setInfo('Select an ascendancy first to allocate ascendancy nodes.');
+        return;
+      }
+
+      if (allocatedNodes.has(nodeId)) {
+        // DEALLOCATION: just remove it
+        allocatedNodes.delete(nodeId);
+        setInfo(`Deallocated node.`);
+      } else {
+        // ALLOCATION: check if adjacent or find path
+        if (isAdjacentToAllocated(nodeId)) {
+          allocatedNodes.add(nodeId);
+          setInfo(`Allocated 1 node.`);
+        } else {
+          // Try to find shortest path
+          const path = findPathToNode(nodeId);
+          if (path && path.length > 0) {
+            for (const pid of path) {
+              allocatedNodes.add(pid);
+            }
+            setInfo(`Auto-pathed ${path.length} node${path.length > 1 ? 's' : ''}.`);
+          } else {
+            setInfo('Cannot reach this node from your current tree.');
+            return;
+          }
+        }
+      }
+
+      render();
+      updatePointCounters();
+      updateStats();
+    }
+
+    // ==========================================
+    // POINT COUNTERS
+    // ==========================================
+    function updatePointCounters() {
+      let mainPoints = 0;
+      let ascPoints = 0;
+
+      for (const nodeId of allocatedNodes) {
+        const pos = nodePositions.get(nodeId);
+        if (!pos) continue;
+        if (pos.node.ascendancyName) {
+          ascPoints++;
+        } else {
+          mainPoints++;
+        }
+      }
+
+      const mainEl = document.getElementById('te-main-points');
+      const ascEl = document.getElementById('te-asc-points');
+      if (mainEl) mainEl.textContent = `${mainPoints} / 123`;
+      if (ascEl) ascEl.textContent = `${ascPoints} / 8`;
+    }
+
+    function updateStats() {
+      const statNodes = document.getElementById('te-stat-nodes');
+      const statGroups = document.getElementById('te-stat-groups');
+      const statAlloc = document.getElementById('te-stat-allocated');
+
+      if (statNodes) statNodes.textContent = `Nodes: ${nodePositions.size}`;
+      if (statGroups && treeData) statGroups.textContent = `Groups: ${Object.keys(treeData.groups).length}`;
+      if (statAlloc) statAlloc.textContent = `Allocated: ${allocatedNodes.size}`;
+    }
+
+    // ==========================================
+    // SIDEBAR LOGIC
+    // ==========================================
+    function populateClassDropdown() {
+      if (!treeData) return;
+      const classSelect = document.getElementById('te-class-select') as HTMLSelectElement;
+      if (!classSelect) return;
+
+      classSelect.innerHTML = '<option value="">(Select Class)</option>';
+      for (const cls of treeData.classes) {
+        if (!cls?.name) continue;
+        const opt = document.createElement('option');
+        opt.value = cls.name;
+        opt.textContent = cls.name;
+        classSelect.appendChild(opt);
+      }
+
+      classSelect.addEventListener('change', () => {
+        onClassChange(classSelect.value);
+      });
+    }
+
+    function onClassChange(className: string) {
+      selectedClass = className;
+      selectedAscendancy = '';
+      classStartNodeId = classToStartNode.get(className) || '';
+      allocatedNodes.clear();
+
+      // Populate ascendancy dropdown
+      const ascSelect = document.getElementById('te-asc-select') as HTMLSelectElement;
+      if (ascSelect) {
+        ascSelect.innerHTML = '<option value="">(None)</option>';
+        const ascNames = classAscendancies.get(className) || [];
+        for (const name of ascNames) {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          ascSelect.appendChild(opt);
+        }
+      }
+
+      render();
+      updatePointCounters();
+      updateStats();
+
+      if (className) {
+        setInfo(`Class set to ${className}. Click nodes near the ${className} starting area to begin.`);
+      } else {
+        setInfo('Select a class to begin allocating.');
+      }
+    }
+
+    function onAscendancyChange(ascName: string) {
+      selectedAscendancy = ascName;
+      // Remove any allocated nodes from other ascendancies
+      for (const nodeId of [...allocatedNodes]) {
+        const pos = nodePositions.get(nodeId);
+        if (pos?.node.ascendancyName && pos.node.ascendancyName !== ascName) {
+          allocatedNodes.delete(nodeId);
+        }
+      }
+      render();
+      updatePointCounters();
+      updateStats();
+      if (ascName) {
+        setInfo(`Ascendancy set to ${ascName}.`);
+      }
+    }
+
+    function populateSidebar() {
+      // Populate class/ascendancy
+      populateClassDropdown();
+      const ascSelect = document.getElementById('te-asc-select') as HTMLSelectElement;
+      ascSelect?.addEventListener('change', () => {
+        onAscendancyChange(ascSelect.value);
+      });
+
+      if (!skillsData) {
+        setInfo('Warning: Could not load skills.json. Save/load will not work.');
+        return;
+      }
+
+      const loadoutSelect = document.getElementById('te-loadout-select') as HTMLSelectElement;
+      if (!loadoutSelect) return;
+
+      // Populate loadouts
+      loadoutSelect.innerHTML = '';
+      for (const [key, loadout] of Object.entries(skillsData.loadouts)) {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = loadout.name;
+        loadoutSelect.appendChild(opt);
+      }
+
+      currentLoadout = loadoutSelect.value;
+      populateProgressions();
+
+      loadoutSelect.addEventListener('change', () => {
+        currentLoadout = loadoutSelect.value;
+        populateProgressions();
+      });
+    }
+
+    function populateProgressions() {
+      if (!skillsData) return;
+      const progSelect = document.getElementById('te-progression-select') as HTMLSelectElement;
+      if (!progSelect) return;
+
+      const loadout = skillsData.loadouts[currentLoadout];
+      if (!loadout) return;
+
+      progSelect.innerHTML = '';
+      for (const [key, prog] of Object.entries(loadout.progressions)) {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = prog.name;
+        progSelect.appendChild(opt);
+      }
+
+      currentProgression = progSelect.value;
+      progSelect.addEventListener('change', () => {
+        currentProgression = progSelect.value;
+      });
+    }
+
+    function setupSidebar() {
+      // Load button
+      document.getElementById('te-load-btn')?.addEventListener('click', () => {
+        loadFromProgression();
+      });
+
+      // Copy button
+      document.getElementById('te-copy-btn')?.addEventListener('click', () => {
+        copyTreeDataToClipboard();
+      });
+
+      // Download button
+      document.getElementById('te-download-btn')?.addEventListener('click', () => {
+        downloadSkillsJson();
+      });
+
+      // Reset button (keeps class/ascendancy selection)
+      document.getElementById('te-reset-btn')?.addEventListener('click', () => {
+        allocatedNodes.clear();
+        render();
+        updatePointCounters();
+        updateStats();
+        setInfo('All nodes cleared. Class/ascendancy selection preserved.');
+      });
+
+      // View reset
+      document.getElementById('te-view-reset-btn')?.addEventListener('click', () => {
+        centerView();
+        render();
+      });
+    }
+
+    function setInfo(text: string) {
+      const el = document.getElementById('te-info');
+      if (el) el.textContent = text;
+    }
+
+    // ==========================================
+    // SAVE / LOAD
+    // ==========================================
+    function buildTreeDataJson(): string {
+      const data = {
+        class: selectedAscendancy || selectedClass || 'Unknown',
+        nodes: Array.from(allocatedNodes).sort(),
+      };
+
+      return JSON.stringify(data);
+    }
+
+    function loadFromProgression() {
+      if (!skillsData) { setInfo('skills.json not loaded.'); return; }
+
+      const loadout = skillsData.loadouts[currentLoadout];
+      if (!loadout) { setInfo('Loadout not found.'); return; }
+
+      const prog = loadout.progressions[currentProgression];
+      if (!prog) { setInfo('Progression not found.'); return; }
+
+      const raw = prog.passiveTree?.treeData;
+      if (!raw) {
+        setInfo(`No treeData for "${prog.name}". Start allocating!`);
+        allocatedNodes.clear();
+        render();
+        updatePointCounters();
+        updateStats();
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        allocatedNodes.clear();
+        if (Array.isArray(parsed.nodes)) {
+          for (const id of parsed.nodes) {
+            allocatedNodes.add(String(id));
+          }
+        }
+
+        // Try to restore class/ascendancy from saved data
+        if (parsed.class) {
+          // Check if it's an ascendancy name or class name
+          let foundClass = '';
+          let foundAsc = '';
+          for (const [clsName, ascNames] of classAscendancies) {
+            if (clsName === parsed.class) { foundClass = clsName; break; }
+            if (ascNames.includes(parsed.class)) { foundClass = clsName; foundAsc = parsed.class; break; }
+          }
+          if (foundClass) {
+            const classSelect = document.getElementById('te-class-select') as HTMLSelectElement;
+            if (classSelect) classSelect.value = foundClass;
+            selectedClass = foundClass;
+            classStartNodeId = classToStartNode.get(foundClass) || '';
+            // Rebuild ascendancy dropdown
+            const ascSelect = document.getElementById('te-asc-select') as HTMLSelectElement;
+            if (ascSelect) {
+              ascSelect.innerHTML = '<option value="">(None)</option>';
+              for (const name of classAscendancies.get(foundClass) || []) {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                ascSelect.appendChild(opt);
+              }
+              if (foundAsc) ascSelect.value = foundAsc;
+            }
+            selectedAscendancy = foundAsc;
+          }
+        }
+
+        render();
+        updatePointCounters();
+        updateStats();
+        setInfo(`Loaded ${allocatedNodes.size} nodes from "${prog.name}".`);
+      } catch (e) {
+        setInfo(`Error parsing treeData: ${e}`);
+      }
+    }
+
+    function copyTreeDataToClipboard() {
+      const json = buildTreeDataJson();
+      navigator.clipboard.writeText(json).then(() => {
+        setInfo(`Copied treeData JSON (${allocatedNodes.size} nodes) to clipboard.`);
+      }).catch(err => {
+        setInfo(`Clipboard error: ${err}`);
+      });
+    }
+
+    function downloadSkillsJson() {
+      if (!skillsData) { setInfo('skills.json not loaded.'); return; }
+
+      // Deep clone the skills data
+      const clone = JSON.parse(JSON.stringify(skillsData)) as SkillsJson;
+
+      // Update the selected progression's treeData
+      const loadout = clone.loadouts[currentLoadout];
+      if (loadout) {
+        const prog = loadout.progressions[currentProgression];
+        if (prog) {
+          prog.passiveTree.treeData = buildTreeDataJson();
+        }
+      }
+
+      // Download
+      const blob = new Blob([JSON.stringify(clone, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'skills.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setInfo(`Downloaded skills.json with "${currentProgression}" treeData updated.`);
+    }
+
+    // ==========================================
+    // VIEW CONTROLS (same as V2)
+    // ==========================================
+    function resizeCanvas() {
+      if (!viewer || !canvas) return;
+      const rect = viewer.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      render();
+    }
+
+    function centerView() {
+      panX = 0;
+      panY = 0;
+      zoom = 0.05;
+      if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 1000)}%`;
+    }
+
+    function setupViewControls() {
+      if (!viewer || !canvas) return;
+
+      viewer.addEventListener('pointerdown', (e) => {
+        isPanning = true;
+        panStartX = e.clientX - panX;
+        panStartY = e.clientY - panY;
+        viewer!.setPointerCapture(e.pointerId);
+      });
+
+      viewer.addEventListener('pointermove', (e) => {
+        if (!isPanning) return;
+        panX = e.clientX - panStartX;
+        panY = e.clientY - panStartY;
+        render();
+      });
+
+      viewer.addEventListener('pointerup', (e) => {
+        isPanning = false;
+        viewer!.releasePointerCapture(e.pointerId);
+      });
+
+      viewer.addEventListener('pointerleave', () => {
+        isPanning = false;
+      });
+
+      viewer.addEventListener('wheel', (e: WheelEvent) => {
+        e.preventDefault();
+        const rect = canvas!.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left - canvas!.width / 2 - panX;
+        const mouseY = e.clientY - rect.top - canvas!.height / 2 - panY;
+
+        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+        const newZoom = Math.max(0.01, Math.min(0.5, zoom * zoomFactor));
+
+        if (newZoom !== zoom) {
+          const scale = newZoom / zoom;
+          panX = panX - mouseX * (scale - 1);
+          panY = panY - mouseY * (scale - 1);
+          zoom = newZoom;
+          if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 1000)}%`;
+          render();
+        }
+      }, { passive: false });
+
+      viewer.addEventListener('contextmenu', (e) => e.preventDefault());
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initial size
+      resizeCanvas();
+    }
+
+    // ==========================================
+    // AUTH INIT (must be after all declarations)
+    // ==========================================
+    authBtn?.addEventListener('click', async () => {
+      const pw = authInput?.value || '';
+      if (!pw) { if (authError) authError.textContent = 'Please enter a password.'; return; }
+      if (await tryAuth(pw)) {
+        unlock();
+      } else {
+        if (authError) authError.textContent = 'Incorrect password.';
+        if (authInput) authInput.value = '';
+      }
+    });
+
+    authInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') authBtn?.click();
+    });
+
+    // Check localStorage cache
+    if (localStorage.getItem(AUTH_KEY) === 'true') {
+      unlock();
+    }
+
+  })();
+</script>
