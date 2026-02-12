@@ -583,6 +583,8 @@ import Navigation from '../components/Navigation.astro';
       for (const [nodeId, pos] of nodePositions) {
         const node = pos.node;
         if (node.isMastery) continue;
+        // Skip class start center nodes - their spoke lines are hidden by the class background
+        if (node.classStartIndex !== undefined) continue;
 
         // Use both out and in arrays to catch all connections (dedup handles overlap)
         const connectedIds = [...(node.out || []), ...(node.in || [])];
@@ -595,6 +597,8 @@ import Navigation from '../components/Navigation.astro';
           if (!targetPos) continue;
           const targetNode = targetPos.node;
           if (targetNode.isMastery) continue;
+          // Skip connections to class start center nodes
+          if (targetNode.classStartIndex !== undefined) continue;
 
           // Skip cross ascendancy/main connections
           const srcAsc = !!node.ascendancyName;

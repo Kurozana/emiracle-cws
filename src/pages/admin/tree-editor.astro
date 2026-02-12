@@ -109,6 +109,32 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
             <div class="te-spinner"></div>
             <span id="te-loading-text">Loading passive tree...</span>
           </div>
+
+          <!-- Node Tooltip (hover) -->
+          <div class="te-node-tooltip" id="te-node-tooltip" style="display:none">
+            <div class="te-header-bar">
+              <img class="te-header-img-left" id="te-tooltip-header-left" src="" alt="">
+              <div class="te-header-mid" id="te-tooltip-header-mid">
+                <span class="te-header-name" id="te-tooltip-name"></span>
+              </div>
+              <img class="te-header-img-right" id="te-tooltip-header-right" src="" alt="">
+            </div>
+            <div class="te-tooltip-body" id="te-tooltip-body"></div>
+          </div>
+
+          <!-- Mastery Popup (click) -->
+          <div class="te-mastery-popup" id="te-mastery-popup" style="display:none">
+            <div class="te-header-bar">
+              <img class="te-header-img-left" id="te-popup-header-left" src="" alt="">
+              <div class="te-header-mid" id="te-popup-header-mid">
+                <span class="te-header-name" id="te-mastery-popup-title">Select Mastery Effect</span>
+              </div>
+              <img class="te-header-img-right" id="te-popup-header-right" src="" alt="">
+              <button class="te-mastery-popup-close" id="te-mastery-popup-close">&times;</button>
+            </div>
+            <div class="te-mastery-popup-effects" id="te-mastery-popup-effects"></div>
+            <button class="te-mastery-popup-clear" id="te-mastery-popup-clear" style="display:none">Remove Mastery</button>
+          </div>
         </div>
 
         <div class="te-footer">
@@ -121,7 +147,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
   </section>
 </BaseLayout>
 
-<style>
+<style is:global>
   /* Auth Gate */
   .te-auth-gate {
     min-height: calc(100vh - 60px);
@@ -374,6 +400,185 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
     font-size: 0.75rem;
     color: #606070;
   }
+
+  /* ========================================
+     SHARED: Tooltip (hover) + Popup (click)
+     ======================================== */
+  .te-node-tooltip,
+  .te-mastery-popup {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.95);
+    border: none;
+    border-radius: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 1.05rem;
+  }
+  .te-node-tooltip {
+    z-index: 15;
+    min-width: 340px;
+    max-width: 500px;
+    pointer-events: none;
+  }
+  .te-mastery-popup {
+    z-index: 10;
+    min-width: 380px;
+    max-width: 540px;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+
+  /* Header bar (shared by both) */
+  .te-header-bar {
+    display: flex;
+    align-items: center;
+    height: 44px;
+    position: relative;
+  }
+  .te-header-img-left,
+  .te-header-img-right {
+    height: 44px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
+  }
+  .te-header-mid {
+    flex: 1;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: auto 44px;
+    background-repeat: repeat-x;
+    background-position: center center;
+    padding: 0 8px;
+    overflow: hidden;
+  }
+  .te-header-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  /* Close button (popup only) */
+  .te-mastery-popup-close {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    background: none;
+    border: none;
+    color: #808090;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 0.3rem;
+    z-index: 1;
+  }
+  .te-mastery-popup-close:hover { color: #e0e0e0; }
+
+  /* Body (shared) */
+  .te-tooltip-body {
+    padding: 12px 14px;
+  }
+  .te-tooltip-stat {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #8888ff;
+    margin-bottom: 3px;
+  }
+  .te-tooltip-reminder {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    color: #808080;
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .te-tooltip-separator {
+    border: none;
+    margin: 0;
+    height: 0;
+  }
+  .te-tooltip-mastery-label {
+    font-size: 0.9rem;
+    color: #606070;
+    margin-bottom: 4px;
+  }
+
+  /* Mastery effect row: bullet + text */
+  .te-tooltip-mastery-effect {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .te-tooltip-mastery-effect img {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    opacity: 0.7;
+  }
+  .te-mastery-effect-option img {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    opacity: 0.7;
+  }
+  .te-tooltip-mastery-effect-text {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #8888ff;
+  }
+
+  /* Popup effect options */
+  .te-mastery-popup-effects {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 10px 12px;
+  }
+  .te-mastery-effect-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 0.4rem 0.5rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    color: #8888ff;
+    font-size: 1.05rem;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    line-height: 1.5;
+  }
+  .te-mastery-effect-option:hover {
+    background: rgba(136, 136, 255, 0.08);
+    border-color: rgba(136, 136, 255, 0.25);
+    color: #aaaaff;
+  }
+  .te-mastery-effect-option.selected {
+    background: rgba(74, 138, 58, 0.1);
+    border-color: rgba(74, 138, 58, 0.3);
+    color: #8ad07a;
+  }
+  .te-mastery-popup-clear {
+    margin: 4px 10px 8px;
+    padding: 0.4rem 0.6rem;
+    background: rgba(208, 96, 96, 0.08);
+    border: 1px solid rgba(208, 96, 96, 0.2);
+    border-radius: 2px;
+    color: #d06060;
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+    width: calc(100% - 20px);
+  }
+  .te-mastery-popup-clear:hover { background: rgba(208, 96, 96, 0.15); }
 </style>
 
 <script>
@@ -441,6 +646,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       name?: string;
       icon?: string;
       stats?: string[];
+      reminderText?: string[];
       group: number;
       orbit: number;
       orbitIndex: number;
@@ -456,6 +662,9 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       isAscendancyStart?: boolean;
       classStartIndex?: number;
       inactiveIcon?: string;
+      activeIcon?: string;
+      activeEffectImage?: string;
+      masteryEffects?: { effect: number; stats: string[] }[];
     }
     interface TreeGroup {
       x: number;
@@ -505,8 +714,29 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
     const classStartGroups = new Map<string, string>();
     const lineOnlyGroups = new Set<string>([]);
 
+    // Class name -> background atlas key
+    const classToBackground: Record<string, string> = {
+      'Marauder': 'BackgroundStr',
+      'Ranger': 'BackgroundDex',
+      'Witch': 'BackgroundInt',
+      'Duelist': 'BackgroundStrDex',
+      'Templar': 'BackgroundStrInt',
+      'Shadow': 'BackgroundDexInt',
+    };
+
     // Allocation state
     const allocatedNodes = new Set<string>();
+
+    // Hover preview state
+    let hoveredNodeId: string | null = null;
+    let hoverPreviewPath: string[] = [];   // full BFS path for green allocation preview
+    let hoverOrphans = new Set<string>();  // red nodes for cascade deallocation preview
+    let hoverRafId = 0;
+
+    // Mastery state: nodeId -> selected effect ID
+    const allocatedMasteries = new Map<string, number>();
+    let activeMasteryNodeId: string | null = null;
+    let pendingMasteryPath: string[] = [];  // nodes to allocate when mastery effect is chosen
 
     // Adjacency graph: nodeId -> Set of connected nodeIds (bidirectional, skipping classStart/mastery)
     const adjacency = new Map<string, Set<string>>();
@@ -565,6 +795,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       setupViewControls();
       setupClickHandler();
       setupSidebar();
+      setupMasteryPopup();
 
       // Load data
       try {
@@ -627,6 +858,19 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       const classNames = ['duelist','marauder','ranger','scion','shadow','templar','witch'];
       for (const name of classNames) {
         localAssets[`center${name}`] = `data/assets/classes/center${name}.png`;
+      }
+
+      // Class background images (full-screen behind tree)
+      const classBgMap: Record<string, string> = {
+        'BackgroundStr': 'data/assets/BackgroundStr.png',         // Marauder
+        'BackgroundDex': 'data/assets/BackgroundDex.png',         // Ranger
+        'BackgroundInt': 'data/assets/BackgroundInt.png',         // Witch
+        'BackgroundStrDex': 'data/assets/BackgroundStrDex.png',   // Duelist
+        'BackgroundStrInt': 'data/assets/BackgroundStrInt.png',   // Templar
+        'BackgroundDexInt': 'data/assets/BackgroundDexInt.png',   // Shadow
+      };
+      for (const [key, path] of Object.entries(classBgMap)) {
+        localAssets[key] = path;
       }
 
       const allAssets = { ...cdnToLocal, ...localAssets };
@@ -789,10 +1033,13 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       ctx.translate(canvas.width / 2 + panX, canvas.height / 2 + panY);
       ctx.scale(zoom, zoom);
 
+      renderClassBackground();
       renderBackground();
       renderGroupBackgrounds();
       renderConnections();
+      renderMasteryEffects();
       renderNodes();
+      renderHoverPreview();
 
       ctx.restore();
     }
@@ -816,6 +1063,25 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         }
       }
       ctx!.globalAlpha = 1.0;
+
+    }
+
+    function renderClassBackground() {
+      if (!selectedClass || !treeData || !classStartNodeId) return;
+      const bgKey = classToBackground[selectedClass];
+      const bgImg = bgKey ? atlases[bgKey] : null;
+      if (!bgImg) return;
+
+      // Position at the class's starting area
+      const startNode = treeData.nodes[classStartNodeId];
+      if (!startNode || startNode.group === undefined) return;
+      const group = treeData.groups[startNode.group];
+      if (!group) return;
+
+      const scale = 5;
+      const w = bgImg.width * scale;
+      const h = bgImg.height * scale;
+      ctx!.drawImage(bgImg, group.x - w / 2, group.y - h / 2, w, h);
     }
 
     function renderGroupBackgrounds() {
@@ -994,6 +1260,36 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       }
     }
 
+    /** Render mastery active effects as a separate layer BEFORE nodes so they don't cover neighboring nodes */
+    function renderMasteryEffects() {
+      if (!treeData || !spritesData) return;
+      const masteryIconSize = 200;
+
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (!node.isMastery) continue;
+        if (!isNodeVisible(node)) continue;
+        if (!allocatedMasteries.has(nodeId)) continue;
+        if (!node.activeEffectImage) continue;
+
+        const effectSize = masteryIconSize * 3;
+        const halfEffect = effectSize / 2;
+        const drew = drawSprite('masteryActiveEffect', node.activeEffectImage, pos.x - halfEffect, pos.y - halfEffect, effectSize, effectSize);
+        if (!drew) {
+          ctx!.save();
+          ctx!.globalAlpha = 0.3;
+          const grad = ctx!.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, halfEffect);
+          grad.addColorStop(0, '#4488ff');
+          grad.addColorStop(1, 'transparent');
+          ctx!.fillStyle = grad;
+          ctx!.beginPath();
+          ctx!.arc(pos.x, pos.y, halfEffect, 0, Math.PI * 2);
+          ctx!.fill();
+          ctx!.restore();
+        }
+      }
+    }
+
     function renderNodes() {
       if (!treeData || !spritesData) return;
 
@@ -1028,8 +1324,30 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         const halfFrame = size.frame / 2;
 
         // 1. Draw icon (active or inactive based on allocation)
-        if (type === 'mastery' && node.inactiveIcon) {
-          drawSprite('masteryConnected', node.inactiveIcon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+        if (type === 'mastery') {
+          const hasMasteryEffect = allocatedMasteries.has(nodeId);
+          if (hasMasteryEffect) {
+            // Active mastery icon (effect already drawn in renderMasteryEffects)
+            let drewIcon = false;
+            if (node.activeIcon) {
+              drewIcon = drawSprite('masteryActiveSelected', node.activeIcon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+            }
+            // Fallback: draw inactive icon with green glow ring
+            if (!drewIcon && node.inactiveIcon) {
+              drawSprite('masteryConnected', node.inactiveIcon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+              ctx!.save();
+              ctx!.strokeStyle = '#4a8a3a';
+              ctx!.lineWidth = 8;
+              ctx!.shadowColor = '#4a8a3a';
+              ctx!.shadowBlur = 15;
+              ctx!.beginPath();
+              ctx!.arc(pos.x, pos.y, halfIcon * 0.9, 0, Math.PI * 2);
+              ctx!.stroke();
+              ctx!.restore();
+            }
+          } else if (node.inactiveIcon) {
+            drawSprite('masteryConnected', node.inactiveIcon, pos.x - halfIcon, pos.y - halfIcon, size.icon, size.icon);
+          }
         } else if (node.icon) {
           let iconCategory: string;
           if (isAllocated) {
@@ -1073,6 +1391,96 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       }
     }
 
+    function renderHoverPreview() {
+      if (!ctx) return;
+
+      // Green path preview (allocation)
+      if (hoverPreviewPath.length > 0) {
+        ctx.save();
+
+        // Draw green lines along the path
+        ctx.strokeStyle = '#00ff66';
+        ctx.lineWidth = 12;
+        ctx.globalAlpha = 0.6;
+        ctx.lineCap = 'round';
+
+        for (let i = 0; i < hoverPreviewPath.length - 1; i++) {
+          const p1 = nodePositions.get(hoverPreviewPath[i]);
+          const p2 = nodePositions.get(hoverPreviewPath[i + 1]);
+          if (p1 && p2) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+
+        // Draw green glow on new (unallocated) path nodes
+        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = '#00ff66';
+        for (const nid of hoverPreviewPath) {
+          if (allocatedNodes.has(nid)) continue;
+          const pos = nodePositions.get(nid);
+          if (pos) {
+            const node = pos.node;
+            const radius = node.isKeystone ? 60 : (node.isNotable ? 50 : 35);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      // Red deallocation preview
+      if (hoverOrphans.size > 0) {
+        ctx.save();
+
+        // Draw red glow on nodes that would be removed
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = '#ff3333';
+        for (const nid of hoverOrphans) {
+          const pos = nodePositions.get(nid);
+          if (pos) {
+            const node = pos.node;
+            const radius = node.isKeystone ? 65 : (node.isNotable ? 55 : 40);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Draw red lines between orphan connections
+        ctx.strokeStyle = '#ff3333';
+        ctx.lineWidth = 10;
+        ctx.globalAlpha = 0.5;
+        ctx.lineCap = 'round';
+        const drawnLines = new Set<string>();
+        for (const nid of hoverOrphans) {
+          const pos = nodePositions.get(nid);
+          if (!pos) continue;
+          const neighbors = adjacency.get(nid);
+          if (!neighbors) continue;
+          for (const nnid of neighbors) {
+            if (!hoverOrphans.has(nnid)) continue;
+            const lineKey = [nid, nnid].sort().join('-');
+            if (drawnLines.has(lineKey)) continue;
+            drawnLines.add(lineKey);
+            const npos = nodePositions.get(nnid);
+            if (npos) {
+              ctx.beginPath();
+              ctx.moveTo(pos.x, pos.y);
+              ctx.lineTo(npos.x, npos.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        ctx.restore();
+      }
+    }
+
     // ==========================================
     // CLICK-TO-ALLOCATE
     // ==========================================
@@ -1090,6 +1498,15 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         const dx = e.clientX - pointerDownPos.x;
         const dy = e.clientY - pointerDownPos.y;
         if (Math.sqrt(dx * dx + dy * dy) > 5) return; // was a drag
+
+        // Close mastery popup if open and click is outside it
+        const masteryPopup = document.getElementById('te-mastery-popup');
+        if (masteryPopup && masteryPopup.style.display !== 'none') {
+          if (!masteryPopup.contains(e.target as Node)) {
+            hideMasteryPopup();
+          }
+          return;
+        }
 
         // Convert screen coords to world coords
         const rect = canvas!.getBoundingClientRect();
@@ -1116,7 +1533,6 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         for (const [nodeId, pos] of nodePositions) {
           const node = pos.node;
           if (node.classStartIndex !== undefined) continue;
-          if (node.isMastery) continue;
           if (node.isMultipleChoiceOption) continue;
           if (!isNodeVisible(node)) continue;
 
@@ -1124,6 +1540,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
           let type = 'normal';
           if (node.isKeystone) type = 'keystone';
           else if (node.isNotable) type = node.ascendancyName ? 'ascNotable' : 'notable';
+          else if (node.isMastery) type = 'mastery';
           else if (node.isJewelSocket) type = 'jewel';
           else if (node.ascendancyName) type = 'ascSmall';
 
@@ -1139,7 +1556,47 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         }
 
         if (closestId) {
-          toggleNode(closestId);
+          hideNodeTooltip();
+          hoveredNodeId = null;
+          const clickedNode = nodePositions.get(closestId)?.node;
+          if (clickedNode?.isMastery) {
+            handleMasteryClick(closestId);
+          } else {
+            toggleNode(closestId);
+          }
+        }
+      });
+
+      // Hover detection for preview
+      viewer.addEventListener('pointermove', (e) => {
+        if (isPanning) {
+          if (hoveredNodeId !== null) {
+            hoveredNodeId = null;
+            hoverPreviewPath = [];
+            hoverOrphans.clear();
+            viewer!.style.cursor = '';
+            hideNodeTooltip();
+          }
+          return;
+        }
+
+        cancelAnimationFrame(hoverRafId);
+        hoverRafId = requestAnimationFrame(() => {
+          const rect = canvas!.getBoundingClientRect();
+          const screenX = e.clientX - rect.left;
+          const screenY = e.clientY - rect.top;
+          updateHover(screenX, screenY);
+        });
+      });
+
+      viewer.addEventListener('pointerleave', () => {
+        if (hoveredNodeId !== null) {
+          hoveredNodeId = null;
+          hoverPreviewPath = [];
+          hoverOrphans.clear();
+          viewer!.style.cursor = '';
+          hideNodeTooltip();
+          render();
         }
       });
     }
@@ -1174,7 +1631,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
     }
 
     /** BFS shortest path from any allocated node (or class start neighbors) to target */
-    function findPathToNode(targetId: string): string[] | null {
+    function findPathToNode(targetId: string, fullPath = false): string[] | null {
       if (!treeData) return null;
 
       const targetNode = nodePositions.get(targetId)?.node;
@@ -1220,9 +1677,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
               path.push(cur);
               cur = visited.get(cur) || '';
             }
-            // Remove nodes that are already allocated (except we want them for connectivity)
-            // Return only the NEW nodes to allocate
-            return path.filter(id => !allocatedNodes.has(id));
+            return fullPath ? path : path.filter(id => !allocatedNodes.has(id));
           }
 
           queue.push(nid);
@@ -1230,6 +1685,54 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       }
 
       return null; // no path found
+    }
+
+    /** Flood fill from class start through allocated nodes; return all reachable allocated node IDs */
+    function findReachable(excludeNodes?: Set<string>): Set<string> {
+      const remaining = new Set(allocatedNodes);
+      if (excludeNodes) {
+        for (const nid of excludeNodes) remaining.delete(nid);
+      }
+      if (remaining.size === 0) return new Set();
+
+      const reachable = new Set<string>();
+      const startNeighbors = getClassStartNeighbors();
+      const queue: string[] = [];
+
+      for (const sn of startNeighbors) {
+        if (remaining.has(sn)) {
+          reachable.add(sn);
+          queue.push(sn);
+        }
+      }
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const neighbors = adjacency.get(current);
+        if (!neighbors) continue;
+        for (const nid of neighbors) {
+          if (remaining.has(nid) && !reachable.has(nid)) {
+            reachable.add(nid);
+            queue.push(nid);
+          }
+        }
+      }
+
+      return reachable;
+    }
+
+    /** Find nodes that would become orphaned if nodeId is removed */
+    function findOrphansIfRemoved(nodeId: string): Set<string> {
+      const excluded = new Set([nodeId]);
+      const reachable = findReachable(excluded);
+
+      const orphans = new Set<string>();
+      for (const nid of allocatedNodes) {
+        if (nid === nodeId) continue;
+        if (!reachable.has(nid)) orphans.add(nid);
+      }
+
+      return orphans;
     }
 
     function toggleNode(nodeId: string) {
@@ -1253,9 +1756,14 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       }
 
       if (allocatedNodes.has(nodeId)) {
-        // DEALLOCATION: just remove it
+        // CASCADE DEALLOCATION: remove node + any orphaned nodes
+        const orphans = findOrphansIfRemoved(nodeId);
         allocatedNodes.delete(nodeId);
-        setInfo(`Deallocated node.`);
+        for (const oid of orphans) {
+          allocatedNodes.delete(oid);
+        }
+        const total = 1 + orphans.size;
+        setInfo(`Deallocated ${total} node${total > 1 ? 's' : ''}.`);
       } else {
         // ALLOCATION: check if adjacent or find path
         if (isAdjacentToAllocated(nodeId)) {
@@ -1276,9 +1784,392 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
         }
       }
 
+      // Clear hover preview (will recalculate on next mousemove)
+      hoveredNodeId = null;
+      hoverPreviewPath = [];
+      hoverOrphans.clear();
+
       render();
       updatePointCounters();
       updateStats();
+    }
+
+    // ==========================================
+    // MASTERY SUPPORT
+    // ==========================================
+    /** Find shortest path to any of the mastery's connected nodes */
+    function findPathToMastery(masteryId: string): string[] | null {
+      const node = treeData?.nodes[masteryId];
+      if (!node) return null;
+      const connections = [...(node.out || []), ...(node.in || [])];
+
+      // If any connected node is already allocated, no path needed
+      for (const cid of connections) {
+        if (allocatedNodes.has(String(cid))) return [];
+      }
+
+      // If any connected node is a class start neighbor, no path needed
+      const startNeighbors = getClassStartNeighbors();
+      for (const cid of connections) {
+        if (startNeighbors.has(String(cid))) return [String(cid)];
+      }
+
+      // Find shortest path to any connected node
+      let bestPath: string[] | null = null;
+      for (const cid of connections) {
+        const sid = String(cid);
+        if (!nodePositions.has(sid)) continue;
+        const path = findPathToNode(sid);
+        if (path && (bestPath === null || path.length < bestPath.length)) {
+          bestPath = path;
+        }
+      }
+      return bestPath;
+    }
+
+    function handleMasteryClick(nodeId: string) {
+      const node = treeData?.nodes[nodeId];
+      if (!node || !node.isMastery) return;
+
+      if (!selectedClass) {
+        setInfo('Select a class first before allocating nodes.');
+        return;
+      }
+
+      // If already has an effect, just reopen popup to change/remove it
+      if (allocatedMasteries.has(nodeId)) {
+        pendingMasteryPath = [];
+        activeMasteryNodeId = nodeId;
+        showMasteryPopup(nodeId);
+        return;
+      }
+
+      // Find path to reach this mastery
+      const path = findPathToMastery(nodeId);
+      if (path === null) {
+        setInfo('Cannot reach this mastery from your current tree.');
+        return;
+      }
+
+      // Store pending path - will be allocated only when an effect is chosen
+      pendingMasteryPath = path;
+      activeMasteryNodeId = nodeId;
+      showMasteryPopup(nodeId);
+    }
+
+    function showMasteryPopup(nodeId: string) {
+      const popup = document.getElementById('te-mastery-popup');
+      const effectsContainer = document.getElementById('te-mastery-popup-effects');
+      const titleEl = document.getElementById('te-mastery-popup-title');
+      const clearBtn = document.getElementById('te-mastery-popup-clear');
+      if (!popup || !effectsContainer || !canvas) return;
+
+      const node = treeData?.nodes[nodeId];
+      if (!node?.masteryEffects || node.masteryEffects.length === 0) {
+        setInfo('This mastery has no available effects.');
+        return;
+      }
+
+      if (titleEl) titleEl.textContent = node.name || 'Select Mastery Effect';
+
+      // Set mastery header images
+      setHeaderImages(headerAssetMap.mastery, 'te-popup-header-left', 'te-popup-header-mid', 'te-popup-header-right');
+
+      // Show clear button only if mastery already has a selection
+      const hasEffect = allocatedMasteries.has(nodeId);
+      if (clearBtn) clearBtn.style.display = hasEffect ? '' : 'none';
+
+      // Populate effect options
+      effectsContainer.innerHTML = '';
+      const currentEffect = allocatedMasteries.get(nodeId);
+
+      const frameBulletUrl = `${BASE_URL}data/assets/frames/NotableFrameUnallocated.png`;
+
+      for (const me of node.masteryEffects) {
+        const btn = document.createElement('button');
+        btn.className = 'te-mastery-effect-option' + (me.effect === currentEffect ? ' selected' : '');
+        // Add NotableFrame bullet + text
+        const bulletImg = document.createElement('img');
+        bulletImg.src = frameBulletUrl;
+        bulletImg.style.cssText = 'width:18px;height:18px;flex-shrink:0;margin-top:2px;opacity:0.7;';
+        const textSpan = document.createElement('span');
+        textSpan.textContent = me.stats.join(' / ');
+        btn.appendChild(bulletImg);
+        btn.appendChild(textSpan);
+        btn.addEventListener('click', () => {
+          console.log('[TE] Mastery effect clicked:', nodeId, 'effect:', me.effect, 'stats:', me.stats[0]);
+          // Allocate the pending path nodes first
+          if (pendingMasteryPath.length > 0) {
+            for (const pid of pendingMasteryPath) {
+              allocatedNodes.add(pid);
+            }
+            console.log('[TE] Auto-pathed', pendingMasteryPath.length, 'nodes:', pendingMasteryPath);
+          }
+          allocatedMasteries.set(nodeId, me.effect);
+          console.log('[TE] allocatedMasteries now has', allocatedMasteries.size, 'entries:', [...allocatedMasteries.entries()]);
+          const pathCount = pendingMasteryPath.filter(id => !allocatedNodes.has(id) || pendingMasteryPath.includes(id)).length;
+          hideMasteryPopup();
+          render();
+          updatePointCounters();
+          updateStats();
+          setInfo(pathCount > 0
+            ? `Mastery effect selected (auto-pathed ${pathCount} nodes): ${me.stats[0]}`
+            : `Mastery effect: ${me.stats[0]}`);
+        });
+        effectsContainer.appendChild(btn);
+      }
+
+      // Position popup near the node on screen
+      const pos = nodePositions.get(nodeId);
+      if (pos) {
+        const screenX = pos.x * zoom + canvas.width / 2 + panX;
+        const screenY = pos.y * zoom + canvas.height / 2 + panY;
+        popup.style.left = `${Math.max(0, Math.min(screenX + 20, canvas.width - 320))}px`;
+        popup.style.top = `${Math.max(0, Math.min(screenY - 50, canvas.height - 340))}px`;
+      }
+
+      popup.style.display = '';
+    }
+
+    function hideMasteryPopup() {
+      const popup = document.getElementById('te-mastery-popup');
+      if (popup) popup.style.display = 'none';
+      activeMasteryNodeId = null;
+      pendingMasteryPath = [];
+    }
+
+    function setupMasteryPopup() {
+      document.getElementById('te-mastery-popup-close')?.addEventListener('click', hideMasteryPopup);
+      document.getElementById('te-mastery-popup-clear')?.addEventListener('click', () => {
+        if (activeMasteryNodeId) {
+          allocatedMasteries.delete(activeMasteryNodeId);
+          hideMasteryPopup();
+          render();
+          updatePointCounters();
+          updateStats();
+          setInfo('Mastery effect removed.');
+        }
+      });
+    }
+
+    // ==========================================
+    // NODE TOOLTIP
+    // ==========================================
+    // Header asset prefix map
+    const headerAssetMap: Record<string, string> = {
+      normal: 'normalpassiveheader',
+      notable: 'notablepassiveheader',
+      keystone: 'keystonepassiveheader',
+      mastery: 'masteryheaderallocated',
+      jewel: 'jewelpassiveheader',
+    };
+
+    function setHeaderImages(prefix: string, leftId: string, midId: string, rightId: string) {
+      const leftImg = document.getElementById(leftId) as HTMLImageElement | null;
+      const midDiv = document.getElementById(midId) as HTMLElement | null;
+      const rightImg = document.getElementById(rightId) as HTMLImageElement | null;
+      const base = `${BASE_URL}data/assets/`;
+      if (leftImg) leftImg.src = `${base}${prefix}left.png`;
+      if (midDiv) midDiv.style.backgroundImage = `url('${base}${prefix}middle.png')`;
+      if (rightImg) rightImg.src = `${base}${prefix}right.png`;
+    }
+
+    function getNodeHeaderType(node: any): string {
+      if (node.isKeystone) return 'keystone';
+      if (node.isNotable) return 'notable';
+      if (node.isMastery) return 'mastery';
+      if (node.isJewelSocket) return 'jewel';
+      return 'normal';
+    }
+
+    function showNodeTooltip(nodeId: string, screenX: number, screenY: number) {
+      const tooltip = document.getElementById('te-node-tooltip');
+      const nameEl = document.getElementById('te-tooltip-name');
+      const bodyEl = document.getElementById('te-tooltip-body');
+      if (!tooltip || !nameEl || !bodyEl) return;
+
+      const pos = nodePositions.get(nodeId);
+      if (!pos) return;
+      const node = pos.node;
+
+      // Set header images based on node type
+      const headerType = getNodeHeaderType(node);
+      const prefix = headerAssetMap[headerType] || headerAssetMap.normal;
+      setHeaderImages(prefix, 'te-tooltip-header-left', 'te-tooltip-header-mid', 'te-tooltip-header-right');
+
+      // Set name
+      nameEl.textContent = node.name || 'Passive';
+
+      // Build body content
+      let html = '';
+
+      if (node.isMastery) {
+        // Mastery: show selected effect or available effects
+        const frameBullet = `${BASE_URL}data/assets/frames/NotableFrameUnallocated.png`;
+        const selectedEffect = allocatedMasteries.get(nodeId);
+        if (selectedEffect !== undefined && node.masteryEffects) {
+          const me = node.masteryEffects.find(e => e.effect === selectedEffect);
+          if (me) {
+            html += '<div class="te-tooltip-mastery-label">Selected Effect:</div>';
+            for (const stat of me.stats) {
+              html += `<div class="te-tooltip-mastery-effect"><img src="${frameBullet}" alt=""><span class="te-tooltip-mastery-effect-text" style="color:#4a8a3a;">${stat}</span></div>`;
+            }
+          }
+        } else if (node.masteryEffects && node.masteryEffects.length > 0) {
+          html += '<div class="te-tooltip-mastery-label">Click to select an effect</div>';
+          for (const me of node.masteryEffects) {
+            html += '<hr class="te-tooltip-separator">';
+            for (const stat of me.stats) {
+              html += `<div class="te-tooltip-mastery-effect"><img src="${frameBullet}" alt=""><span class="te-tooltip-mastery-effect-text">${stat}</span></div>`;
+            }
+          }
+        }
+      } else {
+        // Normal/Notable/Keystone: show stats
+        if (node.stats && node.stats.length > 0) {
+          for (const stat of node.stats) {
+            html += `<div class="te-tooltip-stat">${stat}</div>`;
+          }
+        }
+        if (node.reminderText && node.reminderText.length > 0) {
+          for (const rt of node.reminderText) {
+            html += `<div class="te-tooltip-reminder">${rt}</div>`;
+          }
+        }
+      }
+
+      if (!html) {
+        hideNodeTooltip();
+        return;
+      }
+
+      bodyEl.innerHTML = html;
+      tooltip.style.display = '';
+      updateTooltipPosition(screenX, screenY);
+    }
+
+    function updateTooltipPosition(screenX: number, screenY: number) {
+      const tooltip = document.getElementById('te-node-tooltip');
+      if (!tooltip || !viewer) return;
+
+      const viewerRect = viewer.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+
+      // Position to the right of cursor, offset slightly
+      let left = screenX + 15;
+      let top = screenY - 10;
+
+      // Clamp to stay within the viewer bounds
+      if (left + tooltipRect.width > viewerRect.width) {
+        left = screenX - tooltipRect.width - 15;
+      }
+      if (top + tooltipRect.height > viewerRect.height) {
+        top = viewerRect.height - tooltipRect.height - 5;
+      }
+      if (top < 0) top = 5;
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    }
+
+    function hideNodeTooltip() {
+      const tooltip = document.getElementById('te-node-tooltip');
+      if (tooltip) tooltip.style.display = 'none';
+    }
+
+    /** Update hover preview based on screen coordinates */
+    function updateHover(screenX: number, screenY: number) {
+      if (!canvas) return;
+
+      const worldX = (screenX - canvas.width / 2 - panX) / zoom;
+      const worldY = (screenY - canvas.height / 2 - panY) / zoom;
+
+      const hitRadii: Record<string, number> = {
+        normal: 50, notable: 65, keystone: 110, mastery: 100,
+        jewel: 72, ascNotable: 67, ascSmall: 50,
+      };
+
+      let closestId: string | null = null;
+      let closestDist = Infinity;
+
+      for (const [nodeId, pos] of nodePositions) {
+        const node = pos.node;
+        if (node.classStartIndex !== undefined) continue;
+        if (node.isMultipleChoiceOption) continue;
+        if (!isNodeVisible(node)) continue;
+
+        let type = 'normal';
+        if (node.isKeystone) type = 'keystone';
+        else if (node.isNotable) type = node.ascendancyName ? 'ascNotable' : 'notable';
+        else if (node.isMastery) type = 'mastery';
+        else if (node.isJewelSocket) type = 'jewel';
+        else if (node.ascendancyName) type = 'ascSmall';
+
+        const hitR = hitRadii[type] || 50;
+        const dx = worldX - pos.x;
+        const dy = worldY - pos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < hitR && dist < closestDist) {
+          closestDist = dist;
+          closestId = nodeId;
+        }
+      }
+
+      if (closestId === hoveredNodeId) {
+        // Same node - just update tooltip position
+        if (closestId) updateTooltipPosition(screenX, screenY);
+        return;
+      }
+
+      hoveredNodeId = closestId;
+      hoverPreviewPath = [];
+      hoverOrphans.clear();
+
+      if (closestId) {
+        const hovNode = nodePositions.get(closestId)?.node;
+
+        if (hovNode?.isMastery) {
+          // Mastery: show green path preview if reachable
+          if (allocatedMasteries.has(closestId)) {
+            viewer!.style.cursor = 'pointer';
+          } else if (selectedClass) {
+            const mPath = findPathToMastery(closestId);
+            if (mPath !== null) {
+              viewer!.style.cursor = 'pointer';
+              // Show the path as green preview (full path including allocated)
+              if (mPath.length > 0) {
+                const fullPath = findPathToNode(mPath[mPath.length - 1], true);
+                if (fullPath) hoverPreviewPath = fullPath;
+              }
+            } else {
+              viewer!.style.cursor = '';
+            }
+          } else {
+            viewer!.style.cursor = '';
+          }
+        } else {
+          viewer!.style.cursor = 'pointer';
+
+          if (allocatedNodes.has(closestId)) {
+            // Red preview: show cascade deallocation
+            hoverOrphans = findOrphansIfRemoved(closestId);
+            hoverOrphans.add(closestId);
+          } else if (selectedClass) {
+            // Green preview: show path to allocate
+            const path = findPathToNode(closestId, true);
+            if (path) hoverPreviewPath = path;
+          }
+        }
+
+        // Show tooltip for the hovered node
+        showNodeTooltip(closestId, screenX, screenY);
+      } else {
+        viewer!.style.cursor = '';
+        hideNodeTooltip();
+      }
+
+      render();
     }
 
     // ==========================================
@@ -1297,6 +2188,9 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
           mainPoints++;
         }
       }
+
+      // Each mastery with a selected effect costs 1 passive point
+      mainPoints += allocatedMasteries.size;
 
       const mainEl = document.getElementById('te-main-points');
       const ascEl = document.getElementById('te-asc-points');
@@ -1341,6 +2235,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       selectedAscendancy = '';
       classStartNodeId = classToStartNode.get(className) || '';
       allocatedNodes.clear();
+      allocatedMasteries.clear();
 
       // Populate ascendancy dropdown
       const ascSelect = document.getElementById('te-asc-select') as HTMLSelectElement;
@@ -1458,6 +2353,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       // Reset button (keeps class/ascendancy selection)
       document.getElementById('te-reset-btn')?.addEventListener('click', () => {
         allocatedNodes.clear();
+        allocatedMasteries.clear();
         render();
         updatePointCounters();
         updateStats();
@@ -1480,10 +2376,19 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
     // SAVE / LOAD
     // ==========================================
     function buildTreeDataJson(): string {
-      const data = {
+      const data: any = {
         class: selectedAscendancy || selectedClass || 'Unknown',
         nodes: Array.from(allocatedNodes).sort(),
       };
+
+      // Include mastery selections if any
+      if (allocatedMasteries.size > 0) {
+        const masteries: Record<string, number> = {};
+        for (const [nid, eid] of allocatedMasteries) {
+          masteries[nid] = eid;
+        }
+        data.masteries = masteries;
+      }
 
       return JSON.stringify(data);
     }
@@ -1501,6 +2406,7 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       if (!raw) {
         setInfo(`No treeData for "${prog.name}". Start allocating!`);
         allocatedNodes.clear();
+        allocatedMasteries.clear();
         render();
         updatePointCounters();
         updateStats();
@@ -1510,9 +2416,17 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       try {
         const parsed = JSON.parse(raw);
         allocatedNodes.clear();
+        allocatedMasteries.clear();
         if (Array.isArray(parsed.nodes)) {
           for (const id of parsed.nodes) {
             allocatedNodes.add(String(id));
+          }
+        }
+
+        // Restore mastery selections
+        if (parsed.masteries && typeof parsed.masteries === 'object') {
+          for (const [nid, eid] of Object.entries(parsed.masteries)) {
+            allocatedMasteries.set(nid, eid as number);
           }
         }
 
@@ -1615,6 +2529,11 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       if (!viewer || !canvas) return;
 
       viewer.addEventListener('pointerdown', (e) => {
+        // Don't capture pointer if clicking inside the mastery popup (would prevent button clicks)
+        const popup = document.getElementById('te-mastery-popup');
+        if (popup && popup.style.display !== 'none' && popup.contains(e.target as Node)) {
+          return;
+        }
         isPanning = true;
         panStartX = e.clientX - panX;
         panStartY = e.clientY - panY;
@@ -1629,8 +2548,10 @@ const skillsJsonStr = JSON.stringify(skillsRaw);
       });
 
       viewer.addEventListener('pointerup', (e) => {
+        if (isPanning) {
+          viewer!.releasePointerCapture(e.pointerId);
+        }
         isPanning = false;
-        viewer!.releasePointerCapture(e.pointerId);
       });
 
       viewer.addEventListener('pointerleave', () => {
